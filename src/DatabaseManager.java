@@ -5,8 +5,8 @@ import java.sql.SQLException;
 public class DatabaseManager {
 
     private static final String DB_URL = "jdbc:oracle:thin://@db18.cse.cuhk.edu.hk:1521/oradb.cse.cuhk.edu.hk";
-    private static final String USER = "h028";
-    private static final String PASSWORD = "yagyorIn";
+    private static final String USER = "XXXX";
+    private static final String PASSWORD = "XXXX";
 
     private static Connection connection;
 
