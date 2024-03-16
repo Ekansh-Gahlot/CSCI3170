@@ -2,20 +2,23 @@ import java.sql.SQLException;
 import java.util.Scanner;
 
 public class SystemInterface {
+    private static final int EXIT_CHOICE = 5;
+    private static final String[] SYSTEM_INTERFACE_CHOICES = {
+        "Create Table",
+        "Delete Table",
+        "Insert Data",
+        "Set System Date",
+        "Back to Main Menu",
+    };
 
     public static void handleSystemInterface() {
-        Scanner scanner = new Scanner(System.in);
+        System.out.println("<This is the system interface.>");
+        System.out.println("----------------------------------------");
+        ChoiceSelector systemInterfaceMenuSelector = new ChoiceSelector(SYSTEM_INTERFACE_CHOICES);
         int systemChoice;
 
         do {
-            System.out.println("System Interface:");
-            System.out.println("1. Create Table Schemas");
-            System.out.println("2. Delete Table Schemas");
-            System.out.println("3. Insert Data to the Database");
-            System.out.println("4. System Date Setting");
-            System.out.println("0. Return to Main Menu");
-            System.out.print("Enter your choice: ");
-            systemChoice = scanner.nextInt();
+            systemChoice = systemInterfaceMenuSelector.getChoice();
 
             switch (systemChoice) {
                 case 1:
@@ -30,59 +33,60 @@ public class SystemInterface {
                 case 4:
                     systemDateSetting();
                     break;
-                case 0:
-                    System.out.println("Returning to the main menu.");
+                case EXIT_CHOICE:
                     break;
                 default:
                     System.out.println("Invalid choice. Please try again.");
             }
 
-        } while (systemChoice != 0);
+        } while (systemChoice != EXIT_CHOICE);
 
-        // Close resources
-        scanner.close();
     }
 
     private static void createTableSchemas() {
+        System.out.println("Creating table schemas...");
         try {
             // logic to create table schemas in the database
             // Implement database-related operations here
-        } catch (SQLException e) {
-            System.err.println("Database error: " + e.getMessage());
+        // } catch (SQLException e) {
+        //     System.err.println("Database error: " + e.getMessage());
         } catch (Exception e) {
             System.err.println("An unexpected error occurred: " + e.getMessage());
         }
     }
 
     private static void deleteTableSchemas() {
+        System.out.println("Deleting table schemas...");
         try {
             // logic to delete table schemas in the database
             // Implement database-related operations here
-        } catch (SQLException e) {
-            System.err.println("Database error: " + e.getMessage());
+        // } catch (SQLException e) {
+        //     System.err.println("Database error: " + e.getMessage());
         } catch (Exception e) {
             System.err.println("An unexpected error occurred: " + e.getMessage());
         }
     }
 
     private static void insertDataToDatabase() {
+        System.out.println("Inserting data to the database...");
         try {
             // logic to insert data to the database
             // Implement database-related operations here
             System.out.println("HELLO");
-        } catch (SQLException e) {
-            System.err.println("Database error: " + e.getMessage());
+        // } catch (SQLException e) {
+        //     System.err.println("Database error: " + e.getMessage());
         } catch (Exception e) {
             System.err.println("An unexpected error occurred: " + e.getMessage());
         }
     }
 
     private static void systemDateSetting() {
+        System.out.println("Setting the system date...");
         try {
             // logic for system date setting
             // Implement database-related operations here
-        } catch (SQLException e) {
-            System.err.println("Database error: " + e.getMessage());
+        // } catch (SQLException e) {
+        //     System.err.println("Database error: " + e.getMessage());
         } catch (Exception e) {
             System.err.println("An unexpected error occurred: " + e.getMessage());
         }
