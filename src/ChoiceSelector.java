@@ -19,7 +19,7 @@ public class ChoiceSelector {
             }
             System.out.print(promptChoiceString);
             try {
-                while (!scanner.hasNext()) // TODO: DK why getting stuck here on every consecutive success inputs
+                while (!scanner.hasNext()) 
                     ;
                 if (scanner.hasNextInt()) {
                     choice = scanner.nextInt();
@@ -31,12 +31,10 @@ public class ChoiceSelector {
                 } else {
                     scanner.next();
                 }
-
             } catch (Exception e) {
-                System.out.println(invalidChoiceString);
             }
+            System.out.println(invalidChoiceString);
         }
-        scanner.close();
         return choice;
     }
 }
