@@ -12,7 +12,7 @@ public class DatabaseManager {
 
     static {
         try {
-            Class.forName("com.mysql.jdbc.Driver");
+            Class.forName("oracle.jdbc.OracleDriver");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
             throw new RuntimeException("Error loading MySQL JDBC driver");
