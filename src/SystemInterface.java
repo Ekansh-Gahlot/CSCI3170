@@ -118,10 +118,8 @@ public class SystemInterface {
         }
     }
 
-    private static void insertDataToDatabase(Connection dbConnection, Scanner scanner) {
-        System.out.println("Inserting data to the database...");
+private static void insertDataToDatabase(Connection dbConnection, Scanner scanner) {
         try {
-            
             System.out.println("Please enter the folder path\n");
             String path = scanner.nextLine().replace("\n", "");
             
@@ -130,43 +128,41 @@ public class SystemInterface {
             String orderspath = path + "/orders.csv";
             String orderingpath = path + "/ordering.csv";
             String bookauthorpath = path + "/book_author.csv";
-            
-            // TODO
-            String insertBookSql = "LOAD DATA INFILE '" + bookpath + "' INTO TABLE book" 
-                    + " FIELDS TERMINATED BY ','" 
-                    + " LINES TERMINATED BY '\\n'" 
-                    + " (ISBN, title, unit_price, no_of_copies)";
-
-            String insertCustomerSql = "LOAD DATA INFILE '" + customerpath + "' INTO TABLE customer" 
-                    + " FIELDS TERMINATED BY ','" 
-                    + " LINES TERMINATED BY '\\n'" 
-                    + " (customer_id, name, shipping_address, credit_card_no)";
-
-            String insertOrdersSql = "LOAD DATA INFILE '" + orderspath + "' INTO TABLE orders" 
-                    + " FIELDS TERMINATED BY ','" 
-                    + " LINES TERMINATED BY '\\n'" 
-                    + " (order_id, o_date, shipping_status, charge, customer_id)";
-
-            String insertOrderingSql = "LOAD DATA INFILE '" + orderingpath + "' INTO TABLE ordering" 
-                    + " FIELDS TERMINATED BY ','" 
-                    + " LINES TERMINATED BY '\\n'" 
-                    + " (order_id, ISBN, quantity)";
-
-            String insertBookAuthorSql = "LOAD DATA INFILE '" + bookauthorpath + "' INTO TABLE book_author" 
-                    + " FIELDS TERMINATED BY ','" 
-                    + " LINES TERMINATED BY '\\n'" 
-                    + " (ISBN, author_name)";
-
-            Statement stmt = dbConnection.createStatement();
-            stmt.executeUpdate(insertBookSql);
-            stmt.executeUpdate(insertCustomerSql);
-            stmt.executeUpdate(insertOrdersSql);
-            stmt.executeUpdate(insertOrderingSql);
-            stmt.executeUpdate(insertBookAuthorSql);
-
+    
+            String insertBookSql = "INSERT IGNORE INTO book(ISBN, title, unit_price, no_of_copies) VALUES (?, ?, ?, ?)";
+            String insertCustomerSql = "INSERT IGNORE INTO customer(customer_id, name, shipping_address, credit_card_no) VALUES (?, ?, ?, ?)";
+            String insertOrdersSql = "INSERT IGNORE INTO orders(order_id, o_date, shipping_status, charge, customer_id) VALUES (?, ?, ?, ?, ?)";
+            String insertOrderingSql = "INSERT IGNORE INTO ordering(order_id, ISBN, quantity) VALUES (?, ?, ?)";
+            String insertBookAuthorSql = "INSERT IGNORE INTO book_author(ISBN, author_name) VALUES (?, ?)";
+    
+            PreparedStatement bookStmt = dbConnection.prepareStatement(insertBookSql);
+            PreparedStatement customerStmt = dbConnection.prepareStatement(insertCustomerSql);
+            PreparedStatement ordersStmt = dbConnection.prepareStatement(insertOrdersSql);
+            PreparedStatement orderingStmt = dbConnection.prepareStatement(insertOrderingSql);
+            PreparedStatement bookAuthorStmt = dbConnection.prepareStatement(insertBookAuthorSql);
+    
+            readAndExecute(bookpath, bookStmt, "|");
+            readAndExecute(customerpath, customerStmt, "|");
+            readAndExecute(orderspath, ordersStmt, "|");
+            readAndExecute(orderingpath, orderingStmt, "|");
+            readAndExecute(bookauthorpath, bookAuthorStmt, "|");
+    
             System.out.println("Data loaded successfully.");
         } catch (Exception e) {
             System.err.println("An unexpected error occurred: " + e.getMessage());
+        }
+    }
+    
+    private static void readAndExecute(String filePath, PreparedStatement stmt, String delimiter) throws IOException, SQLException {
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] data = line.split(delimiter);
+                for (int i = 0; i < data.length; i++) {
+                    stmt.setString(i + 1, data[i].trim());
+                }
+                stmt.executeUpdate();
+            }
         }
     }
 
