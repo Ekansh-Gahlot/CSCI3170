@@ -119,11 +119,14 @@ public class SystemInterface {
             Path orderingpath = base.resolve("ordering.txt");
             Path bookauthorpath = base.resolve("book_author.txt");
 
-            String insertBookSql = "INSERT IGNORE INTO book(ISBN, title, unit_price, no_of_copies) VALUES (?, ?, ?, ?)";
-            String insertCustomerSql = "INSERT IGNORE INTO customer(customer_id, name, shipping_address, credit_card_no) VALUES (?, ?, ?, ?)";
-            String insertOrdersSql = "INSERT IGNORE INTO orders(order_id, o_date, shipping_status, charge, customer_id) VALUES (?, ?, ?, ?, ?)";
-            String insertOrderingSql = "INSERT IGNORE INTO ordering(order_id, ISBN, quantity) VALUES (?, ?, ?)";
-            String insertBookAuthorSql = "INSERT IGNORE INTO book_author(ISBN, author_name) VALUES (?, ?)";
+            // I love Oracle SQL
+            dbConnection.createStatement().execute("ALTER SESSION SET NLS_DATE_FORMAT='YYYY-MM-DD'");
+
+            String insertBookSql = "INSERT INTO book(ISBN, title, unit_price, no_of_copies) VALUES (?, ?, ?, ?)";
+            String insertCustomerSql = "INSERT INTO customer(customer_id, name, shipping_address, credit_card_no) VALUES (?, ?, ?, ?)";
+            String insertOrdersSql = "INSERT INTO orders(order_id, o_date, shipping_status, charge, customer_id) VALUES (?, ?, ?, ?, ?)";
+            String insertOrderingSql = "INSERT INTO ordering(order_id, ISBN, quantity) VALUES (?, ?, ?)";
+            String insertBookAuthorSql = "INSERT INTO book_author(ISBN, author_name) VALUES (?, ?)";
 
             PreparedStatement bookStmt = dbConnection.prepareStatement(insertBookSql);
             PreparedStatement customerStmt = dbConnection.prepareStatement(insertCustomerSql);
@@ -139,6 +142,7 @@ public class SystemInterface {
 
             System.out.println("Data loaded successfully.");
         } catch (Exception e) {
+            e.printStackTrace();
             System.err.println("An unexpected error occurred: " + e.getMessage());
         }
     }
@@ -153,8 +157,10 @@ public class SystemInterface {
                 }
                 stmt.addBatch();
             }
+            stmt.executeBatch();
+        } catch (SQLException ex) {
+            throw new SQLException("Error while loading " + path, ex);
         }
-        stmt.executeBatch();
     }
 
     private static void systemDateSetting() {
