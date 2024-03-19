@@ -211,8 +211,6 @@ public class SystemInterface {
             }
         } while (flag);
 
-        s.close();
-
         System.out.println("System date set to: " + ft.format(inputDate));
     }
 }
