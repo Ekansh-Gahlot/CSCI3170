@@ -24,6 +24,7 @@ public class DatabaseManager {
             credentialsReader.close();
         } catch (IOException e) {
             e.printStackTrace();
+            System.out.println("Did you forget to create the credentials file under ./src, or does it contain at least 2 lines?");
             throw new RuntimeException("Error reading credentials file");
         }
         try {
