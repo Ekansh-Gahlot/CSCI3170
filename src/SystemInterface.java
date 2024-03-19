@@ -121,40 +121,41 @@ public class SystemInterface {
     private static void insertDataToDatabase(Connection dbConnection, Scanner scanner) {
         System.out.println("Inserting data to the database...");
         try {
-
-            System.out.println("Please enter the path of the folder containing the data:");
+            
+            System.out.println("Please enter the folder path\n");
             String path = scanner.nextLine().replace("\n", "");
-
+            
             String bookpath = path + "/book.csv";
             String customerpath = path + "/customer.csv";
             String orderspath = path + "/orders.csv";
             String orderingpath = path + "/ordering.csv";
             String bookauthorpath = path + "/book_author.csv";
+            
+            // TODO
+            String insertBookSql = "LOAD DATA INFILE '" + bookpath + "' INTO TABLE book" 
+                    + " FIELDS TERMINATED BY ','" 
+                    + " LINES TERMINATED BY '\\n'" 
+                    + " (ISBN, title, unit_price, no_of_copies)";
 
-            String insertBookSql = "LOAD DATA LOCAL INFILE '" + bookpath + "' INTO TABLE book" +
-                    " FIELDS TERMINATED BY ','" +
-                    " LINES TERMINATED BY '\\n'" +
-                    " (ISBN, title, unit_price, no_of_copies)";
+            String insertCustomerSql = "LOAD DATA INFILE '" + customerpath + "' INTO TABLE customer" 
+                    + " FIELDS TERMINATED BY ','" 
+                    + " LINES TERMINATED BY '\\n'" 
+                    + " (customer_id, name, shipping_address, credit_card_no)";
 
-            String insertCustomerSql = "LOAD DATA LOCAL INFILE '" + customerpath + "' INTO TABLE customer" +
-                    " FIELDS TERMINATED BY ','" +
-                    " LINES TERMINATED BY '\\n'" +
-                    " (customer_id, name, shipping_address, credit_card_no)";
+            String insertOrdersSql = "LOAD DATA INFILE '" + orderspath + "' INTO TABLE orders" 
+                    + " FIELDS TERMINATED BY ','" 
+                    + " LINES TERMINATED BY '\\n'" 
+                    + " (order_id, o_date, shipping_status, charge, customer_id)";
 
-            String insertOrdersSql = "LOAD DATA LOCAL INFILE '" + orderspath + "' INTO TABLE orders" +
-                    " FIELDS TERMINATED BY ','" +
-                    " LINES TERMINATED BY '\\n'" +
-                    " (order_id, o_date, shipping_status, charge, customer_id)";
+            String insertOrderingSql = "LOAD DATA INFILE '" + orderingpath + "' INTO TABLE ordering" 
+                    + " FIELDS TERMINATED BY ','" 
+                    + " LINES TERMINATED BY '\\n'" 
+                    + " (order_id, ISBN, quantity)";
 
-            String insertOrderingSql = "LOAD DATA LOCAL INFILE '" + orderingpath + "' INTO TABLE ordering" +
-                    " FIELDS TERMINATED BY ','" +
-                    " LINES TERMINATED BY '\\n'" +
-                    " (order_id, ISBN, quantity)";
-
-            String insertBookAuthorSql = "LOAD DATA LOCAL INFILE '" + bookauthorpath + "' INTO TABLE book_author" +
-                    " FIELDS TERMINATED BY ','" +
-                    " LINES TERMINATED BY '\\n'" +
-                    " (ISBN, author_name)";
+            String insertBookAuthorSql = "LOAD DATA INFILE '" + bookauthorpath + "' INTO TABLE book_author" 
+                    + " FIELDS TERMINATED BY ','" 
+                    + " LINES TERMINATED BY '\\n'" 
+                    + " (ISBN, author_name)";
 
             Statement stmt = dbConnection.createStatement();
             stmt.executeUpdate(insertBookSql);
