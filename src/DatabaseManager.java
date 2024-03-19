@@ -1,16 +1,31 @@
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Scanner;
 
 public class DatabaseManager {
 
     private static final String DB_URL = "jdbc:oracle:thin://@db18.cse.cuhk.edu.hk:1521/oradb.cse.cuhk.edu.hk";
-    private static final String USER = "XXXX";
-    private static final String PASSWORD = "XXXX";
+    private static String USER = "";
+    private static String PASSWORD = "";
 
     private static Connection connection;
 
     static {
+        try {
+            File credentialsFile = new File("credentials");
+            Scanner credentialsReader = new Scanner(credentialsFile);
+            USER = credentialsReader.nextLine();
+            PASSWORD = credentialsReader.nextLine();
+            credentialsReader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error reading credentials file");
+        }
         try {
             Class.forName("oracle.jdbc.OracleDriver");
         } catch (ClassNotFoundException e) {
