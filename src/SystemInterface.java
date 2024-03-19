@@ -1,3 +1,9 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -105,12 +111,13 @@ public class SystemInterface {
         try {
             System.out.println("Please enter the folder path\n");
             String path = scanner.nextLine().replace("\n", "");
+            Path base = Paths.get(path);
 
-            String bookpath = path + "/book.csv";
-            String customerpath = path + "/customer.csv";
-            String orderspath = path + "/orders.csv";
-            String orderingpath = path + "/ordering.csv";
-            String bookauthorpath = path + "/book_author.csv";
+            Path bookpath = base.resolve("book.txt");
+            Path customerpath = base.resolve("customer.txt");
+            Path orderspath = base.resolve("orders.txt");
+            Path orderingpath = base.resolve("ordering.txt");
+            Path bookauthorpath = base.resolve("book_author.txt");
 
             String insertBookSql = "INSERT IGNORE INTO book(ISBN, title, unit_price, no_of_copies) VALUES (?, ?, ?, ?)";
             String insertCustomerSql = "INSERT IGNORE INTO customer(customer_id, name, shipping_address, credit_card_no) VALUES (?, ?, ?, ?)";
@@ -124,11 +131,11 @@ public class SystemInterface {
             PreparedStatement orderingStmt = dbConnection.prepareStatement(insertOrderingSql);
             PreparedStatement bookAuthorStmt = dbConnection.prepareStatement(insertBookAuthorSql);
 
-            readAndExecute(bookpath, bookStmt, "|");
-            readAndExecute(customerpath, customerStmt, "|");
-            readAndExecute(orderspath, ordersStmt, "|");
-            readAndExecute(orderingpath, orderingStmt, "|");
-            readAndExecute(bookauthorpath, bookAuthorStmt, "|");
+            readAndExecute(bookpath, bookStmt);
+            readAndExecute(customerpath, customerStmt);
+            readAndExecute(orderspath, ordersStmt);
+            readAndExecute(orderingpath, orderingStmt);
+            readAndExecute(bookauthorpath, bookAuthorStmt);
 
             System.out.println("Data loaded successfully.");
         } catch (Exception e) {
@@ -136,17 +143,18 @@ public class SystemInterface {
         }
     }
 
-    private static void readAndExecute(String filePath, PreparedStatement stmt, String delimiter) throws IOException, SQLException {
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+    private static void readAndExecute(Path path, PreparedStatement stmt) throws IOException, SQLException {
+        try (BufferedReader reader = Files.newBufferedReader(path)) {
             String line;
             while ((line = reader.readLine()) != null) {
-                String[] data = line.split(delimiter);
+                String[] data = line.split("\\|");
                 for (int i = 0; i < data.length; i++) {
                     stmt.setString(i + 1, data[i].trim());
                 }
-                stmt.executeUpdate();
+                stmt.addBatch();
             }
         }
+        stmt.executeBatch();
     }
 
     private static void systemDateSetting() {
