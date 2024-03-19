@@ -1,0 +1,1 @@
+docker run --network=host -it --name 3170proj-run  --rm 3170proj 

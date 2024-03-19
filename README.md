@@ -16,3 +16,12 @@ Run the following:
 cd src
 sh simple-run.sh
 ```
+
+### With Docker
+
+Run the following:
+
+```
+sh build-docker.sh
+sh run-docker.sh
+```
