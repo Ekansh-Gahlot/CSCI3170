@@ -44,7 +44,6 @@ public class SystemInterface {
             }
 
         } while (systemChoice != EXIT_CHOICE);
-        scanner.close();
     }
 
     private static void createTableSchemas(Connection dbConnection) {

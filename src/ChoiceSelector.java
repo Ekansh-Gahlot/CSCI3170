@@ -11,28 +11,23 @@ public class ChoiceSelector {
 
     public int getChoice() {
         int choice = -1;
-        Boolean validChoice = false;
         Scanner scanner = new Scanner(System.in);
-        while (!validChoice) {
+        while (true) {
             for (int i = 0; i < choices.length; i++) {
                 System.out.println((i + 1) + ". " + choices[i] + ".");
             }
             System.out.print(promptChoiceString);
-            try {
-                while (!scanner.hasNext()) 
-                    ;
-                if (scanner.hasNextInt()) {
-                    choice = scanner.nextInt();
-                    if (choice < 1 || choice > choices.length) {
-                        throw new Exception("Choice out of range");
-                    }
-                    validChoice = true;
+            while (!scanner.hasNext())
+                ;
+            if (scanner.hasNextInt()) {
+                choice = scanner.nextInt();
+                if (choice >= 1 && choice <= choices.length) {
                     break;
-                } else {
-                    scanner.next();
                 }
-            } catch (Exception e) {
+            } else {
+                scanner.next();
             }
+
             System.out.println(invalidChoiceString);
         }
         return choice;
