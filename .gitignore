@@ -4,3 +4,6 @@ src/credentials
 *.DS_Store
 
 workbench
+
+.idea/
+*.iml
