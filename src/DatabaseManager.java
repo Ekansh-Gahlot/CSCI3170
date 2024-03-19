@@ -31,21 +31,18 @@ public class DatabaseManager {
         try {
             Class.forName("oracle.jdbc.OracleDriver");
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error loading MySQL JDBC driver");
+            throw new RuntimeException("Error loading MySQL JDBC driver", e);
         }
     }
 
-    public static Connection getConnection() throws SQLException {
+    public static Connection createConnection() throws SQLException {
         if (connection == null || connection.isClosed()) {
             connection = DriverManager.getConnection(DB_URL, USER, PASSWORD);
         }
         return connection;
     }
 
-    public static void closeConnection() throws SQLException {
-        if (connection != null && !connection.isClosed()) {
-            connection.close();
-        }
+    public static Connection getConnection() {
+        return connection;
     }
 }
