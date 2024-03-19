@@ -47,30 +47,42 @@ public class SystemInterface {
     }
 
     private static void createTableSchemas(Connection dbConnection) {
-        System.out.println("Creating table schemas...");
         try {
+            String bookSql = "Create table book"
+                    + "(ISBN CHAR(13) PRIMARY KEY,"
+                    + "title VARCHAR(100) NOT NULL,"
+                    + "unit_price INTEGER,"
+                    + "no_of_copies INTEGER,"
+                    + "CHECK (unit_price >=0),"
+                    + "CHECK (no_of_copies >=0))";
 
-            String bookSql = "Create table book" + "(ISBN CHAR(13)," + "title VARCHAR(100) NOT NULL,"
-                    + "unit_price INTEGER," + "no_of_copies INTEGER," + "CONSTRAINT PRIMARY KEY (ISBN),"
-                    + "CHECK (unit_price >=0)," + "CHECK (no_of_copies >=0))";
+            String customerSql = "Create table customer" 
+                    + "(customer_id VARCHAR(10) PRIMARY KEY,"
+                    + "name VARCHAR(50) NOT NULL," 
+                    + "shipping_address VARCHAR(200) NOT NULL,"
+                    + "credit_card_no CHAR(19))";
 
-            String customerSql = "Create table customer" + "(customer_id VARCHAR(10) NOT NULL,"
-                    + "name VARCHAR(50) NOT NULL," + "shipping_address VARCHAR(200) NOT NULL,"
-                    + "credit_card_no CHAR(19)," + "CONSTRAINT PRIMARY KEY (customer_id))";
+            String ordersSql = "Create table orders"
+            + "(order_id CHAR(8) PRIMARY KEY,"
+            + "o_date DATE,"
+            + "shipping_status CHAR(1),"
+            + "charge INTEGER,"
+            + "customer_id VARCHAR(10) NOT NULL REFERENCES customer(customer_id),"
+            + "CHECK (charge >=0),"
+            + "CHECK (shipping_status='Y' OR shipping_status='N'))";
 
-            String ordersSql = "Create table orders" + "(order_id CHAR(8)," + "o_date DATE," + "shipping_status CHAR,"
-                    + "charge INTEGER," + "customer_id VARCHAR(10) NOT NULL," + "CONSTRAINT PRIMARY KEY (order_id),"
-                    + "FOREIGN KEY (customer_id) REFERENCES customer(customer_id) ON DELETE NO ACTION,"
-                    + "CHECK (charge >=0) , CHECK (shipping_status = 'Y' || shipping_status = 'N'))";
+            String orderingSql = "Create table ordering"
+            + "(order_id CHAR(8) NOT NULL REFERENCES orders(order_id),"
+            + "ISBN CHAR(13) REFERENCES book(ISBN),"
+            + "quantity INTEGER,"
+            + "PRIMARY KEY (order_id , ISBN),"
+            + "CHECK (quantity>=0))";
 
-            String orderingSql = "Create table ordering" + "(order_id CHAR(8) NOT NULL," + "ISBN CHAR(13),"
-                    + "quantity INTEGER," + "CONSTRAINT PRIMARY KEY (order_id , ISBN),"
-                    + "FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE NO ACTION,"
-                    + "FOREIGN KEY (ISBN) REFERENCES book(ISBN)," + "CHECK (quantity>=0))";
-
-            String bookauthorSql = "Create table book_author" + "(ISBN CHAR(13) NOT NULL,"
-                    + "author_name VARCHAR(50) NOT NULL," + "CONSTRAINT PRIMARY KEY (ISBN , author_name),"
-                    + "FOREIGN KEY (ISBN) REFERENCES book(ISBN) ON DELETE NO ACTION)";
+            String bookauthorSql = "Create table book_author" 
+                    + "(ISBN CHAR(13) NOT NULL REFERENCES book(ISBN),"
+                    + "author_name VARCHAR(50) NOT NULL," 
+                    + "PRIMARY KEY (ISBN , author_name))";
+                    
             Statement stmt = dbConnection.createStatement();
             stmt.executeUpdate(bookSql);
             stmt.executeUpdate(customerSql);
@@ -85,14 +97,13 @@ public class SystemInterface {
     }
 
     private static void deleteTableSchemas(Connection dbConnection) {
-        System.out.println("Deleting table schemas...");
         try {
 
-            String delBook = "DROP TABLE IF EXISTS book";
-            String delCustomer = "DROP TABLE IF EXISTS customer";
-            String delOrders = "DROP TABLE IF EXISTS orders";
-            String delOrdering = "DROP TABLE IF EXISTS ordering";
-            String delBookAuthor = "DROP TABLE IF EXISTS book_author";
+            String delBook = "DROP TABLE book";
+            String delCustomer = "DROP TABLE customer";
+            String delOrders = "DROP TABLE orders";
+            String delOrdering = "DROP TABLE ordering";
+            String delBookAuthor = "DROP TABLE book_author";
 
             Statement stmt = dbConnection.createStatement();
             stmt.executeUpdate(delOrdering);

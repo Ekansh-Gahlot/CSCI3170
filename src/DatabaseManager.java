@@ -1,6 +1,4 @@
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -16,6 +14,7 @@ public class DatabaseManager {
     private static Connection connection;
 
     static {
+        // Read credentials from file
         try {
             File credentialsFile = new File("credentials");
             Scanner credentialsReader = new Scanner(credentialsFile);
@@ -27,6 +26,8 @@ public class DatabaseManager {
             System.out.println("Did you forget to create the credentials file under ./src, or does it contain at least 2 lines?");
             throw new RuntimeException("Error reading credentials file");
         }
+        
+        // Get class from oracle driver
         try {
             Class.forName("oracle.jdbc.OracleDriver");
         } catch (ClassNotFoundException e) {

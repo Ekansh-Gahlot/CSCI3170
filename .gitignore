@@ -1,2 +1,6 @@
 *.class
 src/credentials
+
+*.DS_Store
+
+workbench
