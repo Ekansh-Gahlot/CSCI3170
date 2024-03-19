@@ -1,13 +1,12 @@
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class DatabaseManager {
 
-    private static final String DB_URL = "jdbc:oracle:thin://@db18.cse.cuhk.edu.hk:1521/oradb.cse.cuhk.edu.hk";
+    private static final String dbAddress = "jdbc:oracle:thin://@db18.cse.cuhk.edu.hk:1521/oradb.cse.cuhk.edu.hk";
     private static String USER = "";
     private static String PASSWORD = "";
 
@@ -37,13 +36,51 @@ public class DatabaseManager {
 
     public static Connection createConnection() throws SQLException {
         if (connection == null || connection.isClosed()) {
-            connection = DriverManager.getConnection(DB_URL, USER, PASSWORD);
+            connection = DriverManager.getConnection(dbAddress, USER, PASSWORD);
         }
         return connection;
     }
 
     public static Connection getConnection() {
         return connection;
+    }
+
+    static public Connection connectToSQL() {
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection(dbAddress, USER, PASSWORD);
+            System.out.println("Connection Success\n\n");
+            return con;
+        } catch (ClassNotFoundException e) {
+            System.out.println("[ERROR] Java MySQL DB Driver not found.");
+            System.exit(0);
+        } catch (SQLException e) {
+            System.out.println(e);
+            System.exit(0);
+        }
+        return null;
+    }
+    static public ResultSet runSQL(String sql, ArrayList<String> sqlParms) {
+        PreparedStatement prestmt;
+        ResultSet r;
+
+        try {
+            Connection con = connectToSQL();
+            prestmt = con.prepareStatement(sql);
+            int i = 1;
+            for (String s : sqlParms) {
+                prestmt.setString(i, s);
+                i++;
+            }
+            r = prestmt.executeQuery();
+
+            prestmt.close();
+            con.close();
+        } catch (SQLException e) {
+            System.out.println(e);
+            return null;
+        }
+        return r;
     }
 }
 
