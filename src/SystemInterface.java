@@ -115,7 +115,6 @@ public class SystemInterface {
         try {
             System.out.println("Please enter the folder path");
 
-            scanner.nextLine(); // DK why need to add this line, but it just works
             String path = scanner.nextLine().replace("\n", "");
 
             Path base = Paths.get(path);

@@ -21,8 +21,20 @@ public class ChoiceSelector {
         return this;
     }
 
-    private static final String PROMPT_CHOICE = "Please enter your choice: ";
-    private static final String INVALID_CHOICE = "Invalid choice. Please try again.";
+    private String PROMPT_CHOICE = "Please enter your choice: ";
+    private String INVALID_CHOICE = "Invalid choice. Please try again.";
+
+    public ChoiceSelector() {
+    }
+
+    public ChoiceSelector(String promptChoice, String invalidChoice) {
+        if (promptChoice != null) {
+            PROMPT_CHOICE = promptChoice;
+        }
+        if (invalidChoice != null) {
+            INVALID_CHOICE = invalidChoice;
+        }
+    }
 
     public int run(Scanner scanner) {
         while (true) {
@@ -36,6 +48,7 @@ public class ChoiceSelector {
                 if (choice == null) {
                     throw new IllegalArgumentException("Choice out of range");
                 }
+                scanner.nextLine(); // DK why need this line again, otherwise reading ISBN will directly encounter invalid input
                 choice.action.run();
                 return choiceIdx;
             } catch (Exception e) {
