@@ -42,7 +42,7 @@ public class BookstoreInterface {
             ArrayList<String> sqlParameters = new ArrayList<>();
             sqlParameters.add(String.valueOf(orderId));
 
-            ResultSet resultSet = DatabaseManager.runSQL(sql, sqlParameters);
+            ResultSet resultSet = DatabaseManager.executeStatement(sql, sqlParameters);
             resultSet.next();
             shippingStatus = resultSet.getString("shipping_status");
             orderIdentifier = resultSet.getString("order_id");
@@ -51,7 +51,7 @@ public class BookstoreInterface {
                 System.out.println("The order has already been shipped.");
             } else {
                 sql = "SELECT COUNT(*) as bookCount FROM ordering WHERE order_id = ? AND quantity > 0";
-                ResultSet resultSet2 = DatabaseManager.runSQL(sql, sqlParameters); // Use DatabaseManager here
+                ResultSet resultSet2 = DatabaseManager.executeStatement(sql, sqlParameters); // Use DatabaseManager here
                 resultSet2.next();
                 numberOfBooks = resultSet2.getInt("bookCount");
 
@@ -68,7 +68,7 @@ public class BookstoreInterface {
 
                 if (userResponse.equalsIgnoreCase("Y")) {
                     sql = "UPDATE orders SET shipping_status = 'Y' WHERE order_id = ?";
-                    DatabaseManager.runSQL(sql, sqlParameters); // Use DatabaseManager here
+                    DatabaseManager.executeStatement(sql, sqlParameters); // Use DatabaseManager here
                     System.out.println("The shipping status has been updated.");
                 }
             }

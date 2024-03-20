@@ -60,27 +60,28 @@ public class DatabaseManager {
         }
         return null;
     }
-    static public ResultSet runSQL(String sql, ArrayList<String> sqlParms) {
-        PreparedStatement prestmt;
-        ResultSet r;
 
-        try {
-            Connection con = connectToSQL();
-            prestmt = con.prepareStatement(sql);
+    static public ResultSet executeStatement(String statement, ArrayList<String> parameters){
+        PreparedStatement preStatement;
+        try{
+            // Connection con = connectToSQL();
+            Connection connection = getConnection();
+            preStatement = connection.prepareStatement(statement);
             int i = 1;
-            for (String s : sqlParms) {
-                prestmt.setString(i, s);
-                i++;
+            for (String s : parameters) {
+                preStatement.setString(i++, s);
             }
-            r = prestmt.executeQuery();
-
-            prestmt.close();
-            con.close();
-        } catch (SQLException e) {
-            System.out.println(e);
+            return preStatement.executeQuery();
+        }
+        catch (SQLException e) {
+            System.out.println("An error occurred: " + e.getMessage());
+            System.out.println("Statement was: " + statement);
             return null;
         }
-        return r;
+
+        // preStatement.close();
+        // connection.close();
+        // return result;
     }
 }
 
