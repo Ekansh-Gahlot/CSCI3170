@@ -30,7 +30,7 @@ public class DatabaseManager {
         try {
             Class.forName("oracle.jdbc.OracleDriver");
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Error loading MySQL JDBC driver", e);
+            throw new RuntimeException("Error loading Oracle JDBC driver", e);
         }
     }
 
@@ -45,6 +45,7 @@ public class DatabaseManager {
         return connection;
     }
 
+    // Why MYSQL???
     static public Connection connectToSQL() {
         try {
             Class.forName("com.mysql.jdbc.Driver");

@@ -26,7 +26,7 @@ public class SystemInterface {
                 .addAction(2, "Delete Table", SystemInterface::deleteTableSchemas)
                 .addAction(3, "Insert Data", SystemInterface::insertDataToDatabase)
                 .addAction(4, "Set System Date", SystemInterface::systemDateSetting)
-                .addAction(5, "Back to Main Menu", () -> {});
+                .addAction(EXIT_CHOICE, "Back to Main Menu", () -> {});
         int systemChoice;
 
         do {
@@ -67,7 +67,7 @@ public class SystemInterface {
                     + "PRIMARY KEY (order_id , ISBN),"
                     + "CHECK (quantity>=0))";
 
-            String bookauthorSql = "Create table book_author"
+            String bookAuthorSql = "Create table book_author"
                     + "(ISBN CHAR(13) NOT NULL REFERENCES book(ISBN),"
                     + "author_name VARCHAR(50) NOT NULL,"
                     + "PRIMARY KEY (ISBN , author_name))";
@@ -77,7 +77,7 @@ public class SystemInterface {
             stmt.executeUpdate(customerSql);
             stmt.executeUpdate(ordersSql);
             stmt.executeUpdate(orderingSql);
-            stmt.executeUpdate(bookauthorSql);
+            stmt.executeUpdate(bookAuthorSql);
 
             System.out.println("Done! All Tables are created!");
         } catch (Exception e) {
