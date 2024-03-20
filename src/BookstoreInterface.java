@@ -3,10 +3,12 @@ import java.util.*;
 
 
 public class BookstoreInterface {
-    InputValidator menuchecker;
+    private static Scanner scanner;
+    private static final int EXIT_CHOICE = 4;
 
-    public BookstoreInterface() {
-        menuchecker = new InputValidator();
+    public static Runnable handle(Scanner scanner_) {
+        scanner = scanner_;
+        return BookstoreInterface::handle;
     }
 
     public static void handle() {
@@ -14,13 +16,13 @@ public class BookstoreInterface {
                 .addAction(1, "Order Update", BookstoreInterface::updateOrderStatus)
                 .addAction(2, "Order Query", BookstoreInterface::orderQuery)
                 .addAction(3, "N most popular book query", BookstoreInterface::nMostPopularBookQuery)
-                .addAction(4, "Back to main menu", () -> {});
+                .addAction(EXIT_CHOICE, "Back to main menu", () -> {});
 
         try {
             // Bookstore interface logic here
             updateOrderStatus();
 
-            while (selector.run() != 4) {
+            while (selector.run(scanner) != EXIT_CHOICE) {
 
             }
         } catch (Exception e) {
@@ -34,9 +36,8 @@ public class BookstoreInterface {
             int numberOfBooks;
             String shippingStatus;
             String orderIdentifier;
-            Scanner scanner = new Scanner(System.in);
 
-            orderId = InputValidator.validateOrderID();
+            orderId = InputValidator.getValidOrderID(scanner);
             String sql = "SELECT shipping_status, order_id FROM orders WHERE order_id = ?";
             ArrayList<String> sqlParameters = new ArrayList<>();
             sqlParameters.add(String.valueOf(orderId));

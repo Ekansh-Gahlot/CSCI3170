@@ -3,9 +3,11 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.InputMismatchException;
+import java.util.Scanner;
 
 public class MainApplication {
     private static LocalDate systemDate;
+    private static Scanner scanner = new Scanner(System.in);
     private static final int EXIT_CHOICE = 5;
 
     public static LocalDate getSystemDate() {
@@ -37,9 +39,9 @@ public class MainApplication {
 
             int interfaceChoice;
             ChoiceSelector mainMenuSelector = new ChoiceSelector()
-                    .addAction(1, "System Interface", SystemInterface::handle)
-                    .addAction(2, "Customer Interface", CustomerInterface::handle)
-                    .addAction(3, "Bookstore Interface", BookstoreInterface::handle)
+                    .addAction(1, "System Interface", SystemInterface.handle(scanner))
+                    .addAction(2, "Customer Interface", CustomerInterface.handle(scanner))
+                    .addAction(3, "Bookstore Interface", BookstoreInterface.handle(scanner))
                     .addAction(4, "Show System Date", MainApplication::showSystemDate)
                     .addAction(5, "Quit the Application......", () -> {});
 
@@ -47,7 +49,7 @@ public class MainApplication {
             while (true) {
                 // showSystemDate(); // Not sure here whether necessary or not
                 try {
-                    interfaceChoice = mainMenuSelector.run();
+                    interfaceChoice = mainMenuSelector.run(scanner);
                     if (interfaceChoice == EXIT_CHOICE)
                         break;
                 } catch (InputMismatchException e) {
@@ -60,5 +62,6 @@ public class MainApplication {
             System.err.println("Error connecting to the database: " + e.getMessage());
             System.out.println("Exiting the application......");
         }
+        scanner.close();
     }
 }

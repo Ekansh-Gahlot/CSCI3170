@@ -2,17 +2,10 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class InputValidator {
-    Scanner scanner;
-
-    public InputValidator() {
-        //
-    }
-
     //Customer
-    public String validateISBN() {
+    public static String getValidISBN(Scanner scanner) {
         String input = "";
         while (true) {
-            scanner = new Scanner(System.in);
             System.out.println("Please enter the ISBN (e.g., 1-2345-6789-0): ");
             input = scanner.nextLine().replace("\n", "");
             try {
@@ -29,11 +22,10 @@ public class InputValidator {
     }
 
     //Customer
-    public String validateBookTitle() {
+    public static String getValidBookTitle(Scanner scanner) {
         String input = "";
         while (true) {
             System.out.println("Please enter the Book Title: ");
-            scanner = new Scanner(System.in);
             input = scanner.nextLine().replace("\n", "");
             try {
                 if (input.length() == 0 || input.length() > 100) {
@@ -49,11 +41,10 @@ public class InputValidator {
     }
 
     //Customer
-    public String validateAuthorName() {
+    public static String getValidAuthorName(Scanner scanner) {
         String input = "";
         while (true) {
             System.out.println("Please enter the Author Name: ");
-            scanner = new Scanner(System.in);
             input = scanner.nextLine().replace("\n", "");
             try {
                 if (input.length() == 0 || input.length() > 50) {
@@ -69,11 +60,10 @@ public class InputValidator {
     }
 
     //Customer
-    public String validateCustomerID() {
+    public static String getValidCustomerID(Scanner scanner) {
         String input = "";
         while (true) {
             System.out.println("Please enter the Customer ID: ");
-            scanner = new Scanner(System.in);
             input = scanner.nextLine().replace("\n", "");
             try {
                 if (input.length() == 0 || input.length() > 10) {
@@ -89,11 +79,10 @@ public class InputValidator {
     }
 
     //Bookstore
-    public String validateYear() {
+    public static String getValidYear(Scanner scanner) {
         String input = "";
         while (true) {
             System.out.println("Please enter the target year (YYYY): ");
-            scanner = new Scanner(System.in);
             input = scanner.nextLine().replace("\n", "");
             try {
                 if (input.length() != 4) {
@@ -109,11 +98,10 @@ public class InputValidator {
     }
 
     //Bookstore
-    public String validateMonth() {
+    public static String getValidMonth(Scanner scanner) {
         String input = "";
         while (true) {
             System.out.println("Please input the Month for Order Query (e.g., 2005-09): ");
-            scanner = new Scanner(System.in);
             input = scanner.nextLine().replace("\n", "");
             try {
                 if (!(input.matches("\\d{4}-\\d{2}"))) {
@@ -128,11 +116,10 @@ public class InputValidator {
         return input;
     }
 
-    public int validateQuantity() {
+    public static int getValidQuantity(Scanner scanner) {
         int quantity = 0;
         while (true) {
             System.out.println("Please enter the Quantity you want: ");
-            scanner = new Scanner(System.in);
             quantity = scanner.nextInt();
             try {
                 if (quantity < 1) {
@@ -149,11 +136,10 @@ public class InputValidator {
 
     //Customer
 
-    public int validateQuantityAdd() {
+    public static int getValidAddQuantity(Scanner scanner) {
         int input = 0;
         while (true) {
             System.out.println("How many numbers do you want to add? : ");
-            scanner = new Scanner(System.in);
             input = scanner.nextInt();
             try {
                 if (input < 1) {
@@ -169,11 +155,10 @@ public class InputValidator {
     }
 
     //Customer
-    public int validateQuantityDelete() {
+    public static int getValidDeleteQuantity(Scanner scanner) {
         int input = 0;
         while (true) {
             System.out.println("How many numbers do you want to delete? : ");
-            scanner = new Scanner(System.in);
             input = scanner.nextInt();
             try {
                 if (input < 1) {
@@ -189,15 +174,13 @@ public class InputValidator {
     }
 
     //Customer
-    public String validateExit() {
+    public static String getValidExit(Scanner scanner) {
         String input = "";
-        Scanner reader = new Scanner(System.in);
         System.out.println("Please press (L/F): ");
         while (true) {
-            input = reader.nextLine().replace("\n", "");
+            input = scanner.nextLine().replace("\n", "");
             try {
                 if (input.equals("L") || input.equals("F")) {
-                    reader.close();
                     return input;
                 } else {
                     System.out.println("[Error] You should only enter 'L' for Looking the ordered list / 'F' for Finishing ordering. Please try again.");
@@ -209,14 +192,13 @@ public class InputValidator {
     }
 
     //BookStore
-    static public int validateOrderID() {
+    public static int getValidOrderID(Scanner scanner) {
         int oid;
-        Scanner in = new Scanner(System.in);
         while (true) {
             System.out.println("Please input the order ID: ");
             try {
-                if (in.hasNext()) {
-                    oid = in.nextInt();
+                if (scanner.hasNext()) {
+                    oid = scanner.nextInt();
                     if (oid <= 0)
                         System.out.println("[Error] Invalid Order ID. Please try again.");
                     else
@@ -226,16 +208,14 @@ public class InputValidator {
                 System.out.println("[Error] Invalid Input");
             }
         }
-        in.close();
         return oid;
     }
 
     //Customer
-    public String validateAction() {
+    public static String getValidAction(Scanner scanner) {
         String input = "";
         while (true) {
             System.out.println("What kind of action do you want to make? (A/D): ");
-            scanner = new Scanner(System.in);
             input = scanner.nextLine().replace("\n", "");
             try {
                 if (!input.equals("A") & !input.equals("D")) {
@@ -251,14 +231,13 @@ public class InputValidator {
     }
 
     //BookStore
-    static public String validateUserResponse() {
+    public static String getValidUserResponse(Scanner scanner) {
         String r;
-        Scanner in = new Scanner(System.in);
         while (true) {
             System.out.println("Are you sure you want to update the shipping status? (Yes=Y): ");
             try {
-                if (in.hasNext()) {
-                    r = in.nextLine().replace("\n", "");
+                if (scanner.hasNext()) {
+                    r = scanner.nextLine().replace("\n", "");
                     if (r.equals("Y") || r.equals("N"))
                         break;
                     else
@@ -268,16 +247,14 @@ public class InputValidator {
                 System.out.println("[Error] Invalid Input");
             }
         }
-        in.close();
         return r;
     }
 
     //Part of Customer Interface
-    public int validateChoice(int number) {
+    public static int getValidChoice(Scanner scanner, int number) {
         int input = -1;
         while (true) {
             System.out.println("Which book do you want to alter (input book no.): ");
-            scanner = new Scanner(System.in);
             input = scanner.nextInt();
             try {
                 if (input < 1 || input > number) {

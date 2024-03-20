@@ -1,5 +1,4 @@
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,6 +11,12 @@ import java.sql.*;
 
 public class SystemInterface {
     private static final int EXIT_CHOICE = 5;
+    private static Scanner scanner;
+
+    public static Runnable handle(Scanner scanner_){
+        scanner = scanner_;
+        return SystemInterface::handle;
+    }
 
     public static void handle() {
         System.out.println("<This is the system interface.>");
@@ -25,7 +30,7 @@ public class SystemInterface {
         int systemChoice;
 
         do {
-            systemChoice = systemInterfaceMenuSelector.run();
+            systemChoice = systemInterfaceMenuSelector.run(scanner);
         } while (systemChoice != EXIT_CHOICE);
     }
 
@@ -104,20 +109,21 @@ public class SystemInterface {
     }
 
     private static void insertDataToDatabase() {
-        Scanner scanner = new Scanner(System.in);
         Connection dbConnection = DatabaseManager.getConnection();
 
         System.out.println("Inserting data to the database...");
         try {
-            System.out.println("Please enter the folder path\n");
-            String path = scanner.nextLine().replace("\n", "");
-            Path base = Paths.get(path);
+            System.out.println("Please enter the folder path");
 
-            Path bookpath = base.resolve("book.txt");
-            Path customerpath = base.resolve("customer.txt");
-            Path orderspath = base.resolve("orders.txt");
-            Path orderingpath = base.resolve("ordering.txt");
-            Path bookauthorpath = base.resolve("book_author.txt");
+            scanner.nextLine(); // DK why need to add this line, but it just works
+            String path = scanner.nextLine().replace("\n", "");
+
+            Path base = Paths.get(path);
+            Path bookPath = base.resolve("book.txt");
+            Path customerPath = base.resolve("customer.txt");
+            Path ordersPath = base.resolve("orders.txt");
+            Path orderingPath = base.resolve("ordering.txt");
+            Path bookAuthorPath = base.resolve("book_author.txt");
 
             // I love Oracle SQL
             dbConnection.createStatement().execute("ALTER SESSION SET NLS_DATE_FORMAT='YYYY-MM-DD'");
@@ -134,11 +140,11 @@ public class SystemInterface {
             PreparedStatement orderingStmt = dbConnection.prepareStatement(insertOrderingSql);
             PreparedStatement bookAuthorStmt = dbConnection.prepareStatement(insertBookAuthorSql);
 
-            readAndExecute(bookpath, bookStmt);
-            readAndExecute(customerpath, customerStmt);
-            readAndExecute(orderspath, ordersStmt);
-            readAndExecute(orderingpath, orderingStmt);
-            readAndExecute(bookauthorpath, bookAuthorStmt);
+            readAndExecute(bookPath, bookStmt);
+            readAndExecute(customerPath, customerStmt);
+            readAndExecute(ordersPath, ordersStmt);
+            readAndExecute(orderingPath, orderingStmt);
+            readAndExecute(bookAuthorPath, bookAuthorStmt);
 
             System.out.println("Data loaded successfully.");
         } catch (Exception e) {
@@ -184,13 +190,12 @@ public class SystemInterface {
             return;
         }
 
-        Scanner s = new Scanner(System.in);
         while (true) {
             LocalDate inputDate;
 
             System.out.print("Please Input the date (YYYYMMDD): ");
             try {
-                inputDate = formatter.parse(s.nextLine(), LocalDate::from);
+                inputDate = formatter.parse(scanner.nextLine(), LocalDate::from);
             } catch (DateTimeParseException e) {
                 System.out.println("Invalid Format! Please Try again!");
                 continue;

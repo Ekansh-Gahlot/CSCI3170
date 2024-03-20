@@ -24,8 +24,7 @@ public class ChoiceSelector {
     private static final String PROMPT_CHOICE = "Please enter your choice: ";
     private static final String INVALID_CHOICE = "Invalid choice. Please try again.";
 
-    public int run() {
-        Scanner scanner = new Scanner(System.in);
+    public int run(Scanner scanner) {
         while (true) {
             for (Action action : choices.values()) {
                 System.out.println(action.index + ". " + action.name);
@@ -41,6 +40,7 @@ public class ChoiceSelector {
                 return choiceIdx;
             } catch (Exception e) {
                 System.out.println(INVALID_CHOICE);
+                scanner.next(); // clear the invalid input
             }
         }
     }
