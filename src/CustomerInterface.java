@@ -81,7 +81,7 @@ public class CustomerInterface {
 
         Runnable SearchByISBN = () -> {
             ResultSet bookResults[] = new ResultSet[1];
-            String ISBN = InputValidator.getValidISBN(scanner);
+            String ISBN = InputHandler.getValidISBN(scanner);
             String searchSQL = "SELECT ISBN FROM BOOK WHERE ISBN = ?";
             bookResults[0] = DatabaseManager.executeStatement(searchSQL, new ArrayList<String>() {
                 {
@@ -93,14 +93,14 @@ public class CustomerInterface {
 
         Runnable SearchByBookTitle = () -> {
             ResultSet bookResults[] = new ResultSet[2];
-            String exactBookTitle = InputValidator.getValidBookTitle(scanner);
+            String exactBookTitle = InputHandler.getValidBookTitle(scanner);
             String exactSearchSQL = "SELECT ISBN FROM book WHERE title = ?";
             bookResults[0] = DatabaseManager.executeStatement(exactSearchSQL, new ArrayList<String>() {
                 {
                     add(exactBookTitle);
                 }
             });
-            String partialBookTitle = InputValidator.getValidPartialString(exactBookTitle);
+            String partialBookTitle = InputHandler.getValidPartialString(exactBookTitle);
             String partialSearchSQL = "SELECT ISBN FROM book WHERE title LIKE ? AND title <> ?" + sortingOrder;
             bookResults[1] = DatabaseManager.executeStatement(partialSearchSQL, new ArrayList<String>() {
                 {
@@ -113,14 +113,14 @@ public class CustomerInterface {
 
         Runnable SearchByAuthorName = () -> {
             ResultSet bookResults[] = new ResultSet[2];
-            String exactAuthorName = InputValidator.getValidAuthorName(scanner);
+            String exactAuthorName = InputHandler.getValidAuthorName(scanner);
             String exactSearchSQL = "SELECT ISBN FROM book WHERE ISBN IN (SELECT book2.ISBN FROM book_author, book book2 WHERE book2.ISBN = book_author.ISBN AND book_author.author_name = ?)" + sortingOrder; // Yes, I know this is a bit of a mess, but the sub-query is required to get distinct ISBNs
             bookResults[0] = DatabaseManager.executeStatement(exactSearchSQL, new ArrayList<String>() {
                 {
                     add(exactAuthorName);
                 }
             });
-            String partialAuthorName = InputValidator.getValidPartialString(exactAuthorName);
+            String partialAuthorName = InputHandler.getValidPartialString(exactAuthorName);
             String partialSearchSQL = "SELECT ISBN FROM book WHERE ISBN IN (SELECT book2.ISBN FROM book_author, book book2 WHERE book2.ISBN = book_author.ISBN AND book_author.author_name LIKE ? AND book_author.author_name <> ?)" + sortingOrder; // same mess as above
             bookResults[1] = DatabaseManager.executeStatement(partialSearchSQL, new ArrayList<String>() {
                 {

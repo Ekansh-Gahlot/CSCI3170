@@ -37,7 +37,7 @@ public class BookstoreInterface {
             String shippingStatus;
             String orderIdentifier;
 
-            orderId = InputValidator.getValidOrderID(scanner);
+            orderId = InputHandler.getValidOrderID(scanner);
             String sql = "SELECT shipping_status, order_id FROM orders WHERE order_id = ?";
             ArrayList<String> sqlParameters = new ArrayList<>();
             sqlParameters.add(String.valueOf(orderId));
