@@ -53,7 +53,7 @@ public class ChoiceSelector {
                 return choiceIdx;
             } catch (Exception e) {
                 System.out.println(INVALID_CHOICE);
-                scanner.next(); // clear the invalid input
+                scanner.nextLine(); // clear the invalid input
             }
         }
     }
