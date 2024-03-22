@@ -9,15 +9,32 @@ public class InputValidator{
         invalidString = invalidString_;
     }
 
-    public static interface Validation {
+    @FunctionalInterface
+    public static interface BinaryValidation {
         public Boolean validate(String input); // decide whether the input is valid
     }
 
-    public String getValidInput(Scanner scanner, Validation validator){
+    @FunctionalInterface
+    public static interface StringValidation {
+        public String validate(String input); // null for valid input, otherwise error message should be returned
+    }
+
+    public String getValidInput(Scanner scanner, BinaryValidation validator){
         System.out.print(promptString);
         String input = scanner.nextLine().replace("\n", "");
         while (!validator.validate(input)){
             System.out.println(invalidString);
+            input = scanner.nextLine().replace("\n", "");
+        }
+        return input;
+    }
+
+    public String getValidInput(Scanner scanner, StringValidation validator){
+        System.out.print(promptString);
+        String input = scanner.nextLine().replace("\n", "");
+        String validationResult;
+        while ((validationResult = validator.validate(input))!=null){
+            System.out.println(validationResult);
             input = scanner.nextLine().replace("\n", "");
         }
         return input;
