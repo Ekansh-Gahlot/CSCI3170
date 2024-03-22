@@ -22,42 +22,37 @@ public class InputHandler {
 
     // Customer
     public static String getValidISBN(Scanner scanner) {
-        InputValidator validator = new InputValidator("Input the ISBN: ",
-                "[Error] Input does not follow the format of ISBN. Please try again.");
+        InputValidator validator = new InputValidator("Input the ISBN: ");
         return validator.getValidInput(scanner, (String input) -> input.matches("\\d{1}-\\d{4}-\\d{4}-\\d{1}"));
     }
 
     // Customer
     public static String getValidBookTitle(Scanner scanner) {
-        InputValidator validator = new InputValidator("Please enter the Book Title: ",
-                "[Error] Invalid Input: Title out of range! Please try again.");
+        InputValidator validator = new InputValidator("Please enter the Book Title: ");
         return validator.getValidInput(scanner, (String input) -> input.length() > 0 && input.length() <= 100);
     }
 
     // Customer
     public static String getValidAuthorName(Scanner scanner) {
-        InputValidator validator = new InputValidator("Please enter the Author Name: ",
-                "[Error] Invalid Input: Author Name out of range. Please try again.");
+        InputValidator validator = new InputValidator("Please enter the Author Name: ");
         return validator.getValidInput(scanner, (String input) -> input.length() > 0 && input.length() <= 50);
     }
 
     // Customer
     public static String getValidCustomerID(Scanner scanner) {
-        InputValidator validator = new InputValidator("Please enter the Customer ID: ",
-                "[Error] Invalid Input: ID out of range. Please try again.");
+        InputValidator validator = new InputValidator("Please enter the Customer ID: ");
         return validator.getValidInput(scanner, (String input) -> input.length() > 0 && input.length() <= 10);
     }
 
     // Bookstore
     public static String getValidYear(Scanner scanner) {
-        InputValidator validator = new InputValidator("Please enter the target year (YYYY): ",
-                "[Error] Invalid Input: Formatting Error. Please try again.");
+        InputValidator validator = new InputValidator("Please enter the target year (YYYY): ");
         return validator.getValidInput(scanner, (String input) -> input.length() == 4);
     }
 
     // Bookstore
     public static String getValidYearMonth(Scanner scanner) {
-        InputValidator validator = new InputValidator("Please input the Month for Order Query (e.g., 2005-09): ", "[Error] Input does not follow the format of month. Please try again.");
+        InputValidator validator = new InputValidator("Please input the Month for Order Query (e.g., 2005-09): ");
         return validator.getValidInput(scanner, (String input) -> input.matches("\\d{4}-\\d{2}"));
     }
 

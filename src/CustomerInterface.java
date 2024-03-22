@@ -159,8 +159,7 @@ public class CustomerInterface {
     }
 
     private static void orderCreation() {
-        InputValidator customerIDValidator = new InputValidator("Please enter your customerID??",
-                "");
+        InputValidator customerIDValidator = new InputValidator("Please enter your customerID??");
         InputValidator.StringValidation customerIDValidation = (String input) -> {
             try {
                 String customerQuery = "SELECT * FROM customer WHERE customer_id = ?";
@@ -214,13 +213,15 @@ public class CustomerInterface {
         System.out.println(">> You can press \"L\" to see ordered list, or \"F\" to finish ordering");
 
         String bookOrderInput;
-        InputValidator bookOrderInputValidator = new InputValidator("Please enter the book's ISBN: ",
-                "Invalid input: received non-ISBN input, \"L\" nor \"F\".");
-        InputValidator.BinaryValidation bookOrderInputValidation = (
-                String input) -> input.matches("\\d{1}-\\d{4}-\\d{4}-\\d{1}")
-                        || input.equals("L") || input.equals("F");
-        InputValidator bookOrderQuantityValidator = new InputValidator("Please enter the quantity of the order: ",
-                "Invalid input: Invalid quantity. Please try again.");
+        InputValidator bookOrderInputValidator = new InputValidator("Please enter the book's ISBN: ");
+        InputValidator.StringValidation bookOrderInputValidation = (
+                String input) -> {
+                    if(input.matches("\\d{1}-\\d{4}-\\d{4}-\\d{1}")
+                    || input.equals("L") || input.equals("F"))
+                        return null;
+                    return "Invalid input: received non-ISBN input, \"L\" nor \"F\".";
+                };
+        InputValidator bookOrderQuantityValidator = new InputValidator("Please enter the quantity of the order: ");
 
         ArrayList<Order> orders = new ArrayList<>();
         final String finishOrderInput = "F";
@@ -253,12 +254,13 @@ public class CustomerInterface {
                         int numberOfCopies = bookResult.getInt("no_of_copies");
 
                         // get book order quantity
-                        InputValidator.BinaryValidation bookOrderQuantityValidation = (String input) -> {
+                        InputValidator.StringValidation bookOrderQuantityValidation = (String input) -> {
                             try {
                                 int quantity = Integer.parseInt(input);
-                                return quantity > 0 && quantity <= numberOfCopies;
+                                if(quantity > 0 && quantity <= numberOfCopies) return null;
+                                return "Invalid quantity: Please enter a number between 1 and " + numberOfCopies + ".";
                             } catch (NumberFormatException e) {
-                                return false;
+                                return null;
                             }
                         };
                         int quantity = Integer.parseInt(bookOrderQuantityValidator.getValidInput(scanner,

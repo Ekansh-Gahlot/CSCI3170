@@ -2,13 +2,12 @@ import java.util.Scanner;
 
 public class InputValidator{
     private String promptString;
-    private String invalidString;
 
-    public InputValidator(String promptString_, String invalidString_) {
+    public InputValidator(String promptString_) {
         promptString = promptString_;
-        invalidString = invalidString_;
     }
 
+    // remained for backwards compatibility
     @FunctionalInterface
     public static interface BinaryValidation {
         public Boolean validate(String input); // decide whether the input is valid
@@ -19,11 +18,12 @@ public class InputValidator{
         public String validate(String input); // null for valid input, otherwise error message should be returned
     }
 
+    // remained for backwards compatibility
     public String getValidInput(Scanner scanner, BinaryValidation validator){
         System.out.print(promptString);
         String input = scanner.nextLine().replace("\n", "");
         while (!validator.validate(input)){
-            System.out.println(invalidString);
+            System.out.println("Invalid input. Please try again.");
             input = scanner.nextLine().replace("\n", "");
         }
         return input;
