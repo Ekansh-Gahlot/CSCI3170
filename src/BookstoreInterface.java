@@ -1,5 +1,9 @@
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static java.lang.System.err;
+import static java.lang.System.out;
 
 
 public class BookstoreInterface {
@@ -19,14 +23,11 @@ public class BookstoreInterface {
                 .addAction(EXIT_CHOICE, "Back to main menu", () -> {});
 
         try {
-            // Bookstore interface logic here
-            updateOrderStatus();
-
             while (selector.run(scanner) != EXIT_CHOICE) {
 
             }
         } catch (Exception e) {
-            System.err.println("An unexpected error occurred: " + e.getMessage());
+            err.println("An unexpected error occurred: " + e.getMessage());
         }
     }
 
@@ -48,7 +49,7 @@ public class BookstoreInterface {
             orderIdentifier = resultSet.getString("order_id");
 
             if (shippingStatus.equals("Y")) {
-                System.out.println("The order has already been shipped.");
+                out.println("The order has already been shipped.");
             } else {
                 sql = "SELECT COUNT(*) as bookCount FROM ordering WHERE order_id = ? AND quantity > 0";
                 ResultSet resultSet2 = DatabaseManager.executeStatement(sql, sqlParameters); // Use DatabaseManager here
@@ -56,30 +57,81 @@ public class BookstoreInterface {
                 numberOfBooks = resultSet2.getInt("bookCount");
 
                 if (numberOfBooks == 0) {
-                    System.out.println("There are no books in the order. Please send a reminder to the user.");
+                    out.println("There are no books in the order. Please send a reminder to the user.");
                     return;
                 }
 
-                System.out.println("The shipping status of Order " + orderIdentifier + " is " + shippingStatus
+                out.println("The shipping status of Order " + orderIdentifier + " is " + shippingStatus
                         + " and " + numberOfBooks + " books have been ordered.");
 
-                System.out.println("Would you like to update the shipping status? (Y/N)");
+                out.println("Would you like to update the shipping status? (Y/N)");
                 String userResponse = scanner.nextLine().trim();
 
                 if (userResponse.equalsIgnoreCase("Y")) {
                     sql = "UPDATE orders SET shipping_status = 'Y' WHERE order_id = ?";
                     DatabaseManager.executeStatement(sql, sqlParameters); // Use DatabaseManager here
-                    System.out.println("The shipping status has been updated.");
+                    out.println("The shipping status has been updated.");
                 }
             }
         } catch (SQLException e) {
-            System.out.println("[Error]: " + e.getMessage());
+            out.println("[Error]: " + e.getMessage());
         }
     }
 
+    private static final SimpleDateFormat DF = new SimpleDateFormat("yyyy-MM-dd");
     private static void orderQuery() {
+        String customerId = InputHandler.getValidCustomerID(scanner);
+        String year = InputHandler.getValidYear(scanner);
+
+        String sql = "SELECT * FROM orders\n" +
+                     "WHERE customer_id = ? AND YEAR(o_date) = ?\n" +
+                     "ORDER BY order_id ASC";
+
+        try (ResultSet r = DatabaseManager.executeStatement(sql, customerId, year)) {
+            int record = 1;
+            while (r.next()) {
+                out.println();
+                out.println("Record: " + (record++));
+                out.println("OrderID: " + r.getString("order_id"));
+                out.println("OrderDate: " + DF.format(r.getDate("o_date")));
+                out.println("charge: " + r.getInt("charge"));
+                out.println("Shipping status: " + r.getString("shipping_status"));
+            }
+        } catch (SQLException e) {
+            err.println("[Error]: " + e);
+        }
     }
 
     private static void nMostPopularBookQuery() {
+        int n = InputHandler.getValidNBookNum(scanner);
+
+        String sql = "SELECT o.ISBN as 'ISBN', b.title as 'title', SUM(o.quantity) as 'copies' \n" +
+                     "FROM ordering o INNER JOIN book b ON o.isbn = b.isbn\n" +
+                     "GROUP BY o.isbn\n" +
+                     "ORDER BY copies DESC";
+
+        try (ResultSet r = DatabaseManager.executeStatement(sql)) {
+            out.println("ISBN            Title                Copies");
+
+            int rank = 0;
+            int rankAmt = Integer.MAX_VALUE;
+
+            while (r.next()) {
+                int copies = r.getInt("copies");
+                if (rank == n && rankAmt != copies) {
+                    // rank > n and not the same quantity as the current rank
+                    break;
+                } else if (rankAmt > copies) {
+                    // increment rank
+                    rank++;
+                    rankAmt = copies;
+                } // else rankAmt == copies
+                String isbn = r.getString("ISBN");
+                String title = r.getString("title");
+                out.println(isbn + "    " + title + "    " + copies);
+            }
+        } catch (SQLException e) {
+            err.println("[Error]: " + e);
+        }
     }
 }

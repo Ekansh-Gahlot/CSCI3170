@@ -10,7 +10,7 @@ public class InputValidator{
     // remained for backwards compatibility
     @FunctionalInterface
     public static interface BinaryValidation {
-        public Boolean validate(String input); // decide whether the input is valid
+        public boolean validate(String input); // decide whether the input is valid
     }
 
     @FunctionalInterface

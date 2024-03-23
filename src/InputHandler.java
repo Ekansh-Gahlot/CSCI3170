@@ -56,6 +56,24 @@ public class InputHandler {
         return validator.getValidInput(scanner, (String input) -> input.matches("\\d{4}-\\d{2}"));
     }
 
+    public static int getValidNBookNum(Scanner scanner) {
+        int quantity = 0;
+        while (true) {
+            System.out.print("Please enter the N popular books number: ");
+            quantity = scanner.nextInt();
+            try {
+                if (quantity < 1) {
+                    System.out.println("[Error] Invalid Input: cannot be < 1");
+                } else {
+                    break;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("[Error] Invalid Input");
+            }
+        }
+        return quantity;
+    }
+
     public static int getValidQuantity(Scanner scanner) {
         int quantity = 0;
         while (true) {

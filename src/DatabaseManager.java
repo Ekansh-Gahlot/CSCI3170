@@ -2,6 +2,8 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 public class DatabaseManager {
@@ -62,7 +64,7 @@ public class DatabaseManager {
         return null;
     }
 
-    static public ResultSet executeStatement(String statement, ArrayList<String> parameters){
+    public static ResultSet executeStatement(String statement, List<String> parameters){
         PreparedStatement preStatement;
         try{
             // Connection con = connectToSQL();
@@ -83,6 +85,10 @@ public class DatabaseManager {
         // preStatement.close();
         // connection.close();
         // return result;
+    }
+
+    public static ResultSet executeStatement(String statement, String... parameters) {
+        return executeStatement(statement, Arrays.asList(parameters));
     }
 }
 
