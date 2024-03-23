@@ -42,14 +42,10 @@ public class CustomerInterface {
         for (ResultSet bookResult : bookResults) {
             try {
                 while (bookResult.next()) {
-                    ResultSet bookInfo = DatabaseManager.executeStatement("SELECT * FROM BOOK WHERE ISBN = ?",
-                            new ArrayList<String>() {
-                                {
-                                    add(bookResult.getString("ISBN"));
-                                }
-                            });
+                    ResultSet bookInfo = TableHandler.bookTableHandler
+                            .getRecordByKey(new String[] { bookResult.getString("ISBN") });
                     if (bookInfo.next()) {
-                        // print book infor
+                        // print book info
                         System.out.println("Record " + count);
                         System.out.println("ISBN: " + bookInfo.getString("ISBN"));
                         System.out.println("Book Title:" + bookInfo.getString("title"));
@@ -57,13 +53,12 @@ public class CustomerInterface {
                         System.out.println("No of Available:" + bookInfo.getString("no_of_copies"));
 
                         // print authors
-                        ResultSet authors = DatabaseManager.executeStatement(
-                                "SELECT author_name FROM book_author WHERE ISBN = ? ORDER BY author_name ASC",
+                        ResultSet authors = TableHandler.bookAuthorTableHandler.getRecords("ISBN = ?",
                                 new ArrayList<String>() {
                                     {
                                         add(bookInfo.getString("ISBN"));
                                     }
-                                });
+                                }, "author_name ASC");
                         System.out.println("Authors:");
                         int authorCount = 1;
                         while (authors.next()) {
@@ -82,37 +77,57 @@ public class CustomerInterface {
     private static final int BOOK_QUERY_EXIT_CHOICE = 4;
 
     private static void bookSearch() {
-        String sortingOrder = " ORDER BY book.title ASC, book.ISBN ASC";
+        String sortingOrder = "book.title ASC, book.ISBN ASC";
+        String sortingOrderSQL = " ORDER BY " + sortingOrder;
 
         Runnable SearchByISBN = () -> {
             ResultSet bookResults[] = new ResultSet[1];
             String ISBN = InputHandler.getValidISBN(scanner);
-            String searchSQL = "SELECT ISBN FROM BOOK WHERE ISBN = ?";
-            bookResults[0] = DatabaseManager.executeStatement(searchSQL, new ArrayList<String>() {
-                {
-                    add(ISBN);
-                }
-            });
+            // String searchSQL = "SELECT ISBN FROM BOOK WHERE ISBN = ?";
+            // bookResults[0] = DatabaseManager.executeStatement(searchSQL, new
+            // ArrayList<String>() {
+            // {
+            // add(ISBN);
+            // }
+            // });
+            bookResults[0] = TableHandler.bookTableHandler.getRecordByKey(new String[] { ISBN });
             printBookResults(bookResults);
         };
 
         Runnable SearchByBookTitle = () -> {
             ResultSet bookResults[] = new ResultSet[2];
             String exactBookTitle = InputHandler.getValidBookTitle(scanner);
-            String exactSearchSQL = "SELECT ISBN FROM book WHERE title = ?";
-            bookResults[0] = DatabaseManager.executeStatement(exactSearchSQL, new ArrayList<String>() {
+            // String exactSearchSQL = "SELECT ISBN FROM book WHERE title = ?";
+            // bookResults[0] = DatabaseManager.executeStatement(exactSearchSQL, new
+            // ArrayList<String>() {
+            // {
+            // add(exactBookTitle);
+            // }
+            // });
+            bookResults[0] = TableHandler.bookTableHandler.getRecords("title = ?", new ArrayList<String>() {
                 {
                     add(exactBookTitle);
                 }
-            });
+            }, sortingOrder);
+
             String partialBookTitle = InputHandler.getValidPartialString(exactBookTitle);
-            String partialSearchSQL = "SELECT ISBN FROM book WHERE title LIKE ? AND title <> ?" + sortingOrder;
-            bookResults[1] = DatabaseManager.executeStatement(partialSearchSQL, new ArrayList<String>() {
-                {
-                    add(partialBookTitle);
-                    add(exactBookTitle);
-                }
-            });
+            // String partialSearchSQL = "SELECT ISBN FROM book WHERE title LIKE ? AND title
+            // <> ?" + sortingOrder;
+            // bookResults[1] = DatabaseManager.executeStatement(partialSearchSQL, new
+            // ArrayList<String>() {
+            // {
+            // add(partialBookTitle);
+            // add(exactBookTitle);
+            // }
+            // });
+            bookResults[1] = TableHandler.bookTableHandler.getRecords("title LIKE ? AND title <> ?",
+                    new ArrayList<String>() {
+                        {
+                            add(partialBookTitle);
+                            add(exactBookTitle);
+                        }
+                    }, sortingOrder);
+
             printBookResults(bookResults);
         };
 
@@ -120,8 +135,8 @@ public class CustomerInterface {
             ResultSet bookResults[] = new ResultSet[2];
             String exactAuthorName = InputHandler.getValidAuthorName(scanner);
             String exactSearchSQL = "SELECT ISBN FROM book WHERE ISBN IN (SELECT book2.ISBN FROM book_author, book book2 WHERE book2.ISBN = book_author.ISBN AND book_author.author_name = ?)"
-                    + sortingOrder; // Yes, I know this is a bit of a mess, but the sub-query is required to get
-                                    // distinct ISBNs
+                    + sortingOrderSQL; // Yes, I know this is a bit of a mess, but the sub-query is required to get
+                                       // distinct ISBNs
             bookResults[0] = DatabaseManager.executeStatement(exactSearchSQL, new ArrayList<String>() {
                 {
                     add(exactAuthorName);
@@ -129,7 +144,7 @@ public class CustomerInterface {
             });
             String partialAuthorName = InputHandler.getValidPartialString(exactAuthorName);
             String partialSearchSQL = "SELECT ISBN FROM book WHERE ISBN IN (SELECT book2.ISBN FROM book_author, book book2 WHERE book2.ISBN = book_author.ISBN AND book_author.author_name LIKE ? AND book_author.author_name <> ?)"
-                    + sortingOrder; // same mess as above
+                    + sortingOrderSQL; // same mess as above
             bookResults[1] = DatabaseManager.executeStatement(partialSearchSQL, new ArrayList<String>() {
                 {
                     add(partialAuthorName);
@@ -162,12 +177,7 @@ public class CustomerInterface {
         InputValidator customerIDValidator = new InputValidator("Please enter your customerID??");
         InputValidator.StringValidation customerIDValidation = (String input) -> {
             try {
-                String customerQuery = "SELECT * FROM customer WHERE customer_id = ?";
-                ResultSet customerResult = DatabaseManager.executeStatement(customerQuery, new ArrayList<String>() {
-                    {
-                        add(input);
-                    }
-                });
+                ResultSet customerResult = TableHandler.customerTableHandler.getRecordByKey(new String[] { input });
                 if (!customerResult.next()) {
                     return "No customer found with the given ID. Please try again.";
                 }
@@ -197,8 +207,8 @@ public class CustomerInterface {
                     add(customerID);
                 }
             });
-            
-            if (orderResult == null){
+
+            if (orderResult == null) {
                 System.out.println("An error occurred while creating the order. Please try again.");
                 return;
             }
@@ -216,11 +226,11 @@ public class CustomerInterface {
         InputValidator bookOrderInputValidator = new InputValidator("Please enter the book's ISBN: ");
         InputValidator.StringValidation bookOrderInputValidation = (
                 String input) -> {
-                    if(input.matches("\\d{1}-\\d{4}-\\d{4}-\\d{1}")
+            if (input.matches("\\d{1}-\\d{4}-\\d{4}-\\d{1}")
                     || input.equals("L") || input.equals("F"))
-                        return null;
-                    return "Invalid input: received non-ISBN input, \"L\" nor \"F\".";
-                };
+                return null;
+            return "Invalid input: received non-ISBN input, \"L\" nor \"F\".";
+        };
         InputValidator bookOrderQuantityValidator = new InputValidator("Please enter the quantity of the order: ");
 
         ArrayList<Order> orders = new ArrayList<>();
@@ -241,12 +251,7 @@ public class CustomerInterface {
                     String ISBN = bookOrderInput;
                     try {
                         // check existing book
-                        String bookQuery = "SELECT * FROM book WHERE ISBN = ?";
-                        ResultSet bookResult = DatabaseManager.executeStatement(bookQuery, new ArrayList<String>() {
-                            {
-                                add(ISBN);
-                            }
-                        });
+                        ResultSet bookResult = TableHandler.bookTableHandler.getRecordByKey(new String[] { ISBN });
                         if (!bookResult.next()) {
                             System.out.println("No book found with the given ISBN. Please try again.");
                             break;
@@ -257,7 +262,8 @@ public class CustomerInterface {
                         InputValidator.StringValidation bookOrderQuantityValidation = (String input) -> {
                             try {
                                 int quantity = Integer.parseInt(input);
-                                if(quantity > 0 && quantity <= numberOfCopies) return null;
+                                if (quantity > 0 && quantity <= numberOfCopies)
+                                    return null;
                                 return "Invalid quantity: Please enter a number between 1 and " + numberOfCopies + ".";
                             } catch (NumberFormatException e) {
                                 return null;
@@ -267,17 +273,26 @@ public class CustomerInterface {
                                 bookOrderQuantityValidation));
 
                         // create ordering
-                        String orderingInsert = "INSERT INTO ordering VALUES (?, ?, ?)";
-                        ResultSet insertResult = DatabaseManager.executeStatement(orderingInsert, new ArrayList<String>() {
+                        // String orderingInsert = "INSERT INTO ordering VALUES (?, ?, ?)";
+                        // ResultSet insertResult = DatabaseManager.executeStatement(orderingInsert, new
+                        // ArrayList<String>() {
+                        // {
+                        // add(String.format("%08d", thisOrderID[0]));
+                        // add(ISBN);
+                        // add(String.valueOf(quantity));
+                        // }
+                        // });
+                        Boolean insertResult = TableHandler.orderingTableHandler.insertRecord(new ArrayList<String>() {
                             {
                                 add(String.format("%08d", thisOrderID[0]));
                                 add(ISBN);
                                 add(String.valueOf(quantity));
                             }
                         });
-                        if(insertResult != null){
+
+                        if (insertResult) {
                             orders.add(new Order(ISBN, quantity));
-    
+
                             // add up the charge
                             int unitPrice = bookResult.getInt("unit_price");
                             totalBookPrice += unitPrice * quantity;
@@ -290,16 +305,27 @@ public class CustomerInterface {
             }
         }
         // clean up by calculating the charge for this order
-        if (totalBookQuantity > 0){
+        if (totalBookQuantity > 0) {
             int shippingPrice = totalBookQuantity * UNIT_SHIPPING_CHARGE + HANDLING_CHARGE;
             int totalPrice = totalBookPrice + shippingPrice;
-            String updateOrder = "UPDATE orders SET charge = ? WHERE order_id = ?";
-            DatabaseManager.executeStatement(updateOrder, new ArrayList<String>() {
-                {
-                    add(String.valueOf(totalPrice));
-                    add(String.format("%08d", thisOrderID[0]));
-                }
-            });
+            // String updateOrder = "UPDATE orders SET charge = ? WHERE order_id = ?";
+            // DatabaseManager.executeStatement(updateOrder, new ArrayList<String>() {
+            // {
+            // add(String.valueOf(totalPrice));
+            // add(String.format("%08d", thisOrderID[0]));
+            // }
+            // });
+            Boolean updateResult = TableHandler.orderTableHandler.updateRecordByKey(new String[] { "charge" },
+                    new ArrayList<String>() {
+                        {
+                            add(String.valueOf(totalPrice));
+                        }
+                    }, new String[] {
+                            String.format("%08d", thisOrderID[0])
+                    });
+            if (!updateResult) {
+                System.out.println("An error occurred while updating the order charge.");
+            }
         }
     }
 
