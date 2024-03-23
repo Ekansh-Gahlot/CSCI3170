@@ -80,22 +80,24 @@ public class BookstoreInterface {
 
     private static final SimpleDateFormat DF = new SimpleDateFormat("yyyy-MM-dd");
     private static void orderQuery() {
-        String customerId = InputHandler.getValidCustomerID(scanner);
-        String year = InputHandler.getValidYear(scanner);
+        String[] yearMonth = InputHandler.getValidYearMonth(scanner).split("-");
+        String year = yearMonth[0], month = yearMonth[1];
 
         String sql = "SELECT * FROM orders\n" +
-                     "WHERE customer_id = ? AND YEAR(o_date) = ?\n" +
+                     "WHERE shipping_status = 'Y' \n" +
+                     "AND extract (YEAR from o_date)  = ? \n" + // thank you Oracle
+                     "AND extract (MONTH from o_date)  = ?\n" +
                      "ORDER BY order_id ASC";
 
-        try (ResultSet r = DatabaseManager.executeStatement(sql, customerId, year)) {
+        try (ResultSet r = DatabaseManager.executeStatement(sql, year, month)) {
             int record = 1;
             while (r.next()) {
                 out.println();
                 out.println("Record: " + (record++));
                 out.println("OrderID: " + r.getString("order_id"));
+                out.println("CustomerID: " + r.getString("customer_id"));
                 out.println("OrderDate: " + DF.format(r.getDate("o_date")));
                 out.println("charge: " + r.getInt("charge"));
-                out.println("Shipping status: " + r.getString("shipping_status"));
             }
         } catch (SQLException e) {
             err.println("[Error]: " + e);
@@ -105,10 +107,10 @@ public class BookstoreInterface {
     private static void nMostPopularBookQuery() {
         int n = InputHandler.getValidNBookNum(scanner);
 
-        String sql = "SELECT o.ISBN as 'ISBN', b.title as 'title', SUM(o.quantity) as 'copies' \n" +
+        String sql = "SELECT o.ISBN as \"ISBN\", b.title as \"title\", SUM(o.quantity) as \"copies\" \n" +
                      "FROM ordering o INNER JOIN book b ON o.isbn = b.isbn\n" +
-                     "GROUP BY o.isbn\n" +
-                     "ORDER BY copies DESC";
+                     "GROUP BY o.isbn, b.title\n" +
+                     "ORDER BY SUM(o.quantity) DESC";
 
         try (ResultSet r = DatabaseManager.executeStatement(sql)) {
             out.println("ISBN            Title                Copies");
