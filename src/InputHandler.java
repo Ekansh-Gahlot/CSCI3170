@@ -1,3 +1,5 @@
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -20,11 +22,65 @@ public class InputHandler {
         return input;
     }
 
-    // Customer
+    public static InputValidator.BinaryValidation checkISBN = (String input) -> input.matches("\\d{1}-\\d{4}-\\d{4}-\\d{1}");
     public static String getValidISBN(Scanner scanner) {
         InputValidator validator = new InputValidator("Input the ISBN: ");
-        return validator.getValidInput(scanner, (String input) -> input.matches("\\d{1}-\\d{4}-\\d{4}-\\d{1}"));
+        return validator.getValidInput(scanner, checkISBN);
     }
+
+    final static String FINISH_ORDER = "F";
+    final static String LIST_ORDER = "L";
+    public static InputValidator.BinaryValidation checkLF = (String input) -> input.equals(LIST_ORDER) || input.equals(FINISH_ORDER);
+    public static String getValidOrderInput(Scanner scanner){
+        InputValidator bookOrderInputValidator = new InputValidator("Please enter the book's ISBN: ");
+        InputValidator.StringValidation bookOrderInputValidation = (
+                String input) -> {
+            if (checkISBN.validate(input) || checkLF.validate(input))
+                return null;
+            return "Invalid input: received non-ISBN input, \""+FINISH_ORDER+"\" nor \""+LIST_ORDER+"\".";
+        };
+        return bookOrderInputValidator.getValidInput(scanner,
+        bookOrderInputValidation);
+    }
+
+    /**
+     * Returns a valid order quantity by checking if the input is a valid integer that is within the range of the number of copies of the book.
+     * Returns -1 if error occurred
+     * @param scanner
+     * @param ISBN
+     * @return
+     */
+    public static int getValidOrderBookQuantity(Scanner scanner, String ISBN){
+        // check existing book
+        ResultSet bookResult = TableHandler.bookTableHandler.selectRecordByKey(new String[] { ISBN });
+        final int[] numberOfCopies = {-1};
+        try{
+            if (!bookResult.next()) {
+                System.out.println("No book found with the given ISBN. Please try again.");
+                return -1;
+            }
+            numberOfCopies[0] = bookResult.getInt("no_of_copies");
+        }catch(SQLException e){
+            System.out.println("An error occurred while checking remaining book quantity: " + e.getMessage());
+            return -1;
+        }
+
+        // get book order quantity
+        InputValidator.StringValidation bookOrderQuantityValidation = (String input) -> {
+            try {
+                int quantity = Integer.parseInt(input);
+                if (quantity > 0 && quantity <= numberOfCopies[0])
+                    return null;
+                return "Invalid quantity: Please enter a number between 1 and " + numberOfCopies[0] + ".";
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        };
+        InputValidator bookOrderQuantityValidator = new InputValidator("Please enter the quantity of the order: ");
+        return Integer.parseInt(bookOrderQuantityValidator.getValidInput(scanner,
+                bookOrderQuantityValidation));
+    }
+
 
     // Customer
     public static String getValidBookTitle(Scanner scanner) {
@@ -39,9 +95,29 @@ public class InputHandler {
     }
 
     // Customer
+    public static String getValidCustomerID(Scanner scanner, String prompt) {
+        InputValidator customerIDValidator = new InputValidator(prompt);
+        InputValidator.StringValidation customerIDValidation = (String input) -> {
+            if(input.length() == 0 || input.length() > 10) {
+                return "Customer ID must be between 1 and 10 characters long.";
+            }
+            try {
+                ResultSet customerResult = TableHandler.customerTableHandler.selectRecordByKey(new String[] { input });
+                if (!customerResult.next()) {
+                    return "No customer found with the given ID. Please try again.";
+                }
+            } catch (SQLException e) {
+                return "An error occurred while checking customer: " + e.getMessage();
+            }
+            return null;
+        };
+        String customerID = customerIDValidator.getValidInput(scanner,
+                customerIDValidation);
+        return customerID;
+    }
+
     public static String getValidCustomerID(Scanner scanner) {
-        InputValidator validator = new InputValidator("Please enter the Customer ID: ");
-        return validator.getValidInput(scanner, (String input) -> input.length() > 0 && input.length() <= 10);
+        return getValidCustomerID(scanner, "Please enter your customerID??");
     }
 
     // Bookstore
