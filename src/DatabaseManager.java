@@ -1,7 +1,6 @@
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
@@ -48,21 +47,21 @@ public class DatabaseManager {
     }
 
     // Why MYSQL???
-    static public Connection connectToSQL() {
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection con = DriverManager.getConnection(dbAddress, USER, PASSWORD);
-            System.out.println("Connection Success\n\n");
-            return con;
-        } catch (ClassNotFoundException e) {
-            System.out.println("[ERROR] Java MySQL DB Driver not found.");
-            System.exit(0);
-        } catch (SQLException e) {
-            System.out.println(e);
-            System.exit(0);
-        }
-        return null;
-    }
+    // static public Connection connectToSQL() {
+    //     try {
+    //         Class.forName("com.mysql.jdbc.Driver");
+    //         Connection con = DriverManager.getConnection(dbAddress, USER, PASSWORD);
+    //         System.out.println("Connection Success\n\n");
+    //         return con;
+    //     } catch (ClassNotFoundException e) {
+    //         System.out.println("[ERROR] Java MySQL DB Driver not found.");
+    //         System.exit(0);
+    //     } catch (SQLException e) {
+    //         System.out.println(e);
+    //         System.exit(0);
+    //     }
+    //     return null;
+    // }
 
     public static ResultSet executeStatement(String statement, List<String> parameters){
         PreparedStatement preStatement;
@@ -81,10 +80,6 @@ public class DatabaseManager {
             System.out.println("Statement was: " + statement);
             return null;
         }
-
-        // preStatement.close();
-        // connection.close();
-        // return result;
     }
 
     public static ResultSet executeStatement(String statement, String... parameters) {
