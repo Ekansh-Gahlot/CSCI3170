@@ -1,6 +1,8 @@
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Scanner;
 
 public class CustomerInterface {
@@ -127,14 +129,39 @@ public class CustomerInterface {
         querySelector.run(scanner);
     }
 
-    private static class Order {
+    private static class Ordering {
         public String ISBN;
         public int quantity;
 
-        public Order(String ISBN, int quantity) {
+        public Ordering(String ISBN, int quantity) {
             this.ISBN = ISBN;
             this.quantity = quantity;
         }
+    }
+
+    private static Boolean updateOrderCharge(String orderID) {
+        ResultSet orderingResult = TableHandler.orderingTableHandler.selectRecords("order_id = ?",
+                new String[] { orderID });
+        int totalBookPrice = 0, totalBookQuantity = 0;
+        try {
+            while (orderingResult.next()) {
+                ResultSet selectedBook = TableHandler.bookTableHandler
+                        .selectRecordByKey(new String[] { orderingResult.getString("ISBN") });
+                if (selectedBook.next()) {
+                    int unitPrice = selectedBook.getInt("unit_price");
+                    totalBookPrice += unitPrice * orderingResult.getInt("quantity");
+                    totalBookQuantity += orderingResult.getInt("quantity");
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("An error occurred while updating the order charge: " + e.getMessage());
+            return false;
+        }
+        int shippingPrice = totalBookQuantity * UNIT_SHIPPING_CHARGE + HANDLING_CHARGE;
+        int totalPrice = totalBookPrice + shippingPrice;
+        return TableHandler.orderTableHandler.updateRecordByKey(new String[] { "charge" },
+                new String[] { String.valueOf(totalPrice) },
+                new String[] { orderID });
     }
 
     private static void orderCreation() {
@@ -173,7 +200,7 @@ public class CustomerInterface {
 
         String bookOrderInput;
 
-        ArrayList<Order> orders = new ArrayList<>();
+        ArrayList<Ordering> orders = new ArrayList<>();
 
         int totalBookPrice = 0, totalBookQuantity = 0;
         while (!(bookOrderInput = InputHandler.getValidOrderInput(scanner)).equals(InputHandler.FINISH_ORDER)) {
@@ -181,7 +208,7 @@ public class CustomerInterface {
                 case InputHandler.LIST_ORDER:
                     // show ordered list
                     System.out.println("ISBN:            Number: ");
-                    for (Order order : orders) {
+                    for (Ordering order : orders) {
                         System.out.println(order.ISBN + "      " + order.quantity);
                     }
                     break;
@@ -202,18 +229,18 @@ public class CustomerInterface {
                         System.out.println("An error occurred creating order: " + e.getMessage());
                     }
 
-                    if(insertResult){
+                    if (insertResult) {
                         ResultSet selectedBook = TableHandler.bookTableHandler.selectRecordByKey(new String[] { ISBN });
-                        try{
+                        try {
                             if (selectedBook.next()) {
-                                orders.add(new Order(ISBN, quantity));
-                                
+                                orders.add(new Ordering(ISBN, quantity));
+
                                 // add up the charge
                                 int unitPrice = selectedBook.getInt("unit_price");
                                 totalBookPrice += unitPrice * quantity;
                                 totalBookQuantity += quantity;
                             }
-                        }catch(SQLException e){
+                        } catch (SQLException e) {
                             System.out.println("An error occurred while getting book info: " + e.getMessage());
                         }
                     }
@@ -222,19 +249,147 @@ public class CustomerInterface {
         }
         // clean up by calculating the charge for this order
         if (totalBookQuantity > 0) {
-            int shippingPrice = totalBookQuantity * UNIT_SHIPPING_CHARGE + HANDLING_CHARGE;
-            int totalPrice = totalBookPrice + shippingPrice;
-            Boolean updateResult = TableHandler.orderTableHandler.updateRecordByKey(new String[] { "charge" },
-                    new String[] { String.valueOf(totalPrice) },
-                    new String[] { String.format("%08d", thisOrderID[0]) });
-            if (!updateResult) {
+            // int shippingPrice = totalBookQuantity * UNIT_SHIPPING_CHARGE +
+            // HANDLING_CHARGE;
+            // int totalPrice = totalBookPrice + shippingPrice;
+            // Boolean updateResult = TableHandler.orderTableHandler.updateRecordByKey(new
+            // String[] { "charge" },
+            // new String[] { String.valueOf(totalPrice) },
+            // new String[] { String.format("%08d", thisOrderID[0]) });
+            // if (!updateResult) {
+            // System.out.println("An error occurred while updating the order charge.");
+            // }
+            Boolean updateChargeResult = updateOrderCharge(String.format("%08d", thisOrderID[0]));
+            if (!updateChargeResult) {
                 System.out.println("An error occurred while updating the order charge.");
             }
         }
     }
 
-    private static void orderAltering() {
+    private static class Order {
+        public String order_id;
+        public Date o_date;
+        public String shipping_status;
+        public int charge;
+        public String customer_id;
 
+        public Order(String orderID, Date o_date, String shippingStatus, int charge, String customerID) {
+            this.order_id = orderID;
+            this.o_date = o_date;
+            this.shipping_status = shippingStatus;
+            this.charge = charge;
+            this.customer_id = customerID;
+        }
+    }
+
+    private static Order processOrder(ResultSet orderResult) throws SQLException {
+        orderResult.next();
+        return new Order(orderResult.getString("order_id"), orderResult.getDate("o_date"),
+                orderResult.getString("shipping_status"), orderResult.getInt("charge"),
+                orderResult.getString("customer_id"));
+    }
+
+    private static void printOrder(Order order) {
+        System.out.print("order_id:" + order.order_id);
+        System.out.print("  shipping:" + order.shipping_status);
+        System.out.print("  charge=" + order.charge);
+        System.out.println("  customerId=" + order.customer_id);
+    }
+
+    private static List<Ordering> processOrderings(ResultSet orderingResult) throws SQLException {
+        List<Ordering> orderings = new ArrayList<>();
+        while (orderingResult.next()) {
+            orderings.add(new Ordering(orderingResult.getString("ISBN"), orderingResult.getInt("quantity")));
+        }
+        return orderings;
+    }
+
+    private static void printOrdering(List<Ordering> orderings) {
+        int count = 1;
+        for (Ordering ordering : orderings) {
+            System.out.print("book no: " + count++);
+            System.out.print("  ISBN = " + ordering.ISBN);
+            System.out.println("  quantity = " + ordering.quantity);
+        }
+    }
+
+    private static Boolean updateOrderingQuantity(String orderID, String ISBN, int quantity) {
+        return TableHandler.orderingTableHandler.updateRecordByKey(new String[] { "quantity" },
+                new String[] { String.valueOf(quantity) },
+                new String[] { orderID, ISBN });
+    }
+
+    private static void orderAltering() {
+        String orderID = InputHandler.getValidOrderID(scanner, "Please enter the OrderID that you want to change: ");
+        ResultSet orderResult = TableHandler.orderTableHandler.selectRecordByKey(new String[] { orderID });
+        ResultSet orderingResult = TableHandler.orderingTableHandler.selectRecords("order_id = ?",
+                new String[] { orderID });
+
+        Order order;
+        List<Ordering> orderings;
+        try {
+            order = processOrder(orderResult);
+            orderings = processOrderings(orderingResult);
+        } catch (SQLException e) {
+            System.out.println("An error occurred while checking the order ID: " + e.getMessage());
+            return;
+        }
+        printOrder(order);
+        printOrdering(orderings);
+
+        int bookNumber = InputHandler.getValidOrderAlteringBookNumber(scanner, orderings.size());
+        Ordering orderingToAlter = orderings.get(bookNumber - 1);
+        String alteringChoice = InputHandler.getValidOrderAlteringChoice(scanner);
+        Boolean orderShipped = order.shipping_status.equals("Y");
+        int updatedQuantity = -1;
+        switch (alteringChoice) {
+            case InputHandler.ADD_CHOICE:
+                int remainingCopies;
+                try {
+                    ResultSet bookResult = TableHandler.bookTableHandler
+                            .selectRecordByKey(new String[] { orderings.get(bookNumber - 1).ISBN });
+                    bookResult.next();
+                    remainingCopies = bookResult.getInt("no_of_copies");
+                } catch (SQLException e) {
+                    System.out.println(
+                            "An error occurred while checking the remaining copies of book: " + e.getMessage());
+                    return;
+                }
+
+                int quantityToAdd = InputHandler.getValidIntegerInRange("Input the number ", scanner, 1,
+                        remainingCopies);
+                System.out.println("Update is ok!");
+                if (orderShipped) {
+                    System.out.println("The books in the order are shipped");
+                } else {
+                    updatedQuantity = orderingToAlter.quantity + quantityToAdd;
+                }
+                break;
+            default:
+                int currentCopies = orderings.get(bookNumber - 1).quantity;
+                int quantityToRemove = InputHandler.getValidIntegerInRange("Input the number ", scanner, 1,
+                        currentCopies);
+                System.out.println("Update is ok!");
+                if (orderShipped) {
+                    System.out.println("The books in the order are shipped");
+                } else {
+                    updatedQuantity = orderingToAlter.quantity - quantityToRemove;
+                }
+                break;
+        }
+        if (updatedQuantity != -1) {
+            Boolean orderingUpdateResult = updateOrderingQuantity(orderID, orderingToAlter.ISBN,
+            updatedQuantity);
+            if (orderingUpdateResult) {
+                System.out.println("Update is done!!");
+                Boolean updateChargeResult = updateOrderCharge(orderID);
+                if (updateChargeResult) {
+                    System.out.println("Updated charge");
+                }
+            } else {
+                System.out.println("An error occurred while updating the order quantity.");
+            }
+        }
     }
 
     private static void orderQuery() {
