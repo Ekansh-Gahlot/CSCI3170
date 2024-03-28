@@ -373,7 +373,26 @@ public class CustomerInterface {
         }
     }
 
-    private static void orderQuery() {
+    private static void printOrders(ResultSet orderResult){
+        int count = 1;
+        try {
+            while (orderResult.next()) {
+                System.out.println();
+                System.out.println("Record " + count++);
+                System.out.println("OrderID: " + orderResult.getString("order_id"));
+                System.out.println("Order Date: " + orderResult.getDate("o_date"));
+                System.out.println("Charge: " + orderResult.getInt("charge"));
+                System.out.println("Shipping Status: " + orderResult.getString("shipping_status"));
+            }
+        } catch (SQLException e) {
+            System.out.println("An error occurred while printing the orders: " + e.getMessage());
+        }
+    }
 
+    private static void orderQuery() {
+        String customerID = InputHandler.getValidCustomerID(scanner, "Please Input Customer ID: ");
+        int yearToQuery = InputHandler.getValidYear(scanner, "Please Input Year: ");
+        ResultSet orderResults = TableHandler.orderTableHandler.selectRecords("customer_id = ? AND EXTRACT(YEAR from o_date) = ?", new String[] { customerID, String.valueOf(yearToQuery) }, "order_id ASC");
+        printOrders(orderResults);
     }
 }

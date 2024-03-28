@@ -139,10 +139,20 @@ public class InputHandler {
         return getValidCustomerID(scanner, "Please enter your customerID??");
     }
 
+    public static int MAX_YEAR = 9999;
+    public static int getValidYear(Scanner scanner, String prompt){
+        IntegerInputValidator yearValidator = new IntegerInputValidator(prompt);
+        return yearValidator.getValidInput(scanner, (Integer input) -> {
+            if(input >= 0 && input <= 9999){
+                return null;
+            }
+            return "Invalid input: Please enter a number between 0 and " + MAX_YEAR + ".";
+        });
+    }
+    
     // Bookstore
-    public static String getValidYear(Scanner scanner) {
-        StringInputValidator validator = new StringInputValidator("Please enter the target year (YYYY): ");
-        return validator.getValidInput(scanner, (String input) -> input.length() == 4);
+    public static int getValidYear(Scanner scanner) {
+        return getValidYear(scanner, "Please enter the target year (YYYY): ");
     }
 
     // Bookstore
