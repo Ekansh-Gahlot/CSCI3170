@@ -158,7 +158,7 @@ public class CustomerInterface {
             return false;
         }
         int shippingPrice = totalBookQuantity * UNIT_SHIPPING_CHARGE + HANDLING_CHARGE;
-        int totalPrice = totalBookPrice + shippingPrice;
+        int totalPrice = totalBookQuantity > 0 ? totalBookPrice + shippingPrice : 0;
         return TableHandler.orderTableHandler.updateRecordByKey(new String[] { "charge" },
                 new String[] { String.valueOf(totalPrice) },
                 new String[] { orderID });
@@ -201,8 +201,6 @@ public class CustomerInterface {
         String bookOrderInput;
 
         ArrayList<Ordering> orders = new ArrayList<>();
-
-        int totalBookPrice = 0, totalBookQuantity = 0;
         while (!(bookOrderInput = InputHandler.getValidOrderInput(scanner)).equals(InputHandler.FINISH_ORDER)) {
             switch (bookOrderInput) {
                 case InputHandler.LIST_ORDER:
@@ -234,11 +232,6 @@ public class CustomerInterface {
                         try {
                             if (selectedBook.next()) {
                                 orders.add(new Ordering(ISBN, quantity));
-
-                                // add up the charge
-                                int unitPrice = selectedBook.getInt("unit_price");
-                                totalBookPrice += unitPrice * quantity;
-                                totalBookQuantity += quantity;
                             }
                         } catch (SQLException e) {
                             System.out.println("An error occurred while getting book info: " + e.getMessage());
@@ -248,21 +241,9 @@ public class CustomerInterface {
             }
         }
         // clean up by calculating the charge for this order
-        if (totalBookQuantity > 0) {
-            // int shippingPrice = totalBookQuantity * UNIT_SHIPPING_CHARGE +
-            // HANDLING_CHARGE;
-            // int totalPrice = totalBookPrice + shippingPrice;
-            // Boolean updateResult = TableHandler.orderTableHandler.updateRecordByKey(new
-            // String[] { "charge" },
-            // new String[] { String.valueOf(totalPrice) },
-            // new String[] { String.format("%08d", thisOrderID[0]) });
-            // if (!updateResult) {
-            // System.out.println("An error occurred while updating the order charge.");
-            // }
-            Boolean updateChargeResult = updateOrderCharge(String.format("%08d", thisOrderID[0]));
-            if (!updateChargeResult) {
-                System.out.println("An error occurred while updating the order charge.");
-            }
+        Boolean updateChargeResult = updateOrderCharge(String.format("%08d", thisOrderID[0]));
+        if (!updateChargeResult) {
+            System.out.println("An error occurred while updating the order charge.");
         }
     }
 
