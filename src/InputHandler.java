@@ -22,18 +22,36 @@ public class InputHandler {
         return input;
     }
 
-    public static InputValidator.BinaryValidation checkISBN = (String input) -> input.matches("\\d{1}-\\d{4}-\\d{4}-\\d{1}");
+    /**
+     * A general method to get a valid integer within the given range from the user.
+     * @param prompt the prompt message to display to the user
+     * @param scanner the scanner object to read input from the user
+     * @param min the minimum value of the input
+     * @param max the maximum value of the input
+     * @return a valid integer within the given range
+     */
+    public static int getValidIntegerInRange(String prompt, Scanner scanner, int min, int max) {
+        IntegerInputValidator validator = new IntegerInputValidator(prompt);
+        return validator.getValidInput(scanner, (Integer input) -> {
+            if (input >= min && input <= max) {
+                return null;
+            }
+            return "Invalid input: Please enter a number between " + min + " and " + max + ".";
+        });
+    }
+
+    public static StringInputValidator.BinaryValidation checkISBN = (String input) -> input.matches("\\d{1}-\\d{4}-\\d{4}-\\d{1}");
     public static String getValidISBN(Scanner scanner) {
-        InputValidator validator = new InputValidator("Input the ISBN: ");
+        StringInputValidator validator = new StringInputValidator("Input the ISBN: ");
         return validator.getValidInput(scanner, checkISBN);
     }
 
     final static String FINISH_ORDER = "F";
     final static String LIST_ORDER = "L";
-    public static InputValidator.BinaryValidation checkLF = (String input) -> input.equals(LIST_ORDER) || input.equals(FINISH_ORDER);
+    public static StringInputValidator.BinaryValidation checkLF = (String input) -> input.equals(LIST_ORDER) || input.equals(FINISH_ORDER);
     public static String getValidOrderInput(Scanner scanner){
-        InputValidator bookOrderInputValidator = new InputValidator("Please enter the book's ISBN: ");
-        InputValidator.StringValidation bookOrderInputValidation = (
+        StringInputValidator bookOrderInputValidator = new StringInputValidator("Please enter the book's ISBN: ");
+        StringInputValidator.StringValidation bookOrderInputValidation = (
                 String input) -> {
             if (checkISBN.validate(input) || checkLF.validate(input))
                 return null;
@@ -66,38 +84,39 @@ public class InputHandler {
         }
 
         // get book order quantity
-        InputValidator.StringValidation bookOrderQuantityValidation = (String input) -> {
-            try {
-                int quantity = Integer.parseInt(input);
-                if (quantity > 0 && quantity <= numberOfCopies[0])
-                    return null;
-                return "Invalid quantity: Please enter a number between 1 and " + numberOfCopies[0] + ".";
-            } catch (NumberFormatException e) {
-                return null;
-            }
-        };
-        InputValidator bookOrderQuantityValidator = new InputValidator("Please enter the quantity of the order: ");
-        return Integer.parseInt(bookOrderQuantityValidator.getValidInput(scanner,
-                bookOrderQuantityValidation));
+        return getValidIntegerInRange("Please enter the quantity of the order: ", scanner, 1, numberOfCopies[0]);
+        // StringInputValidator.StringValidation bookOrderQuantityValidation = (String input) -> {
+        //     try {
+        //         int quantity = Integer.parseInt(input);
+        //         if (quantity > 0 && quantity <= numberOfCopies[0])
+        //             return null;
+        //         return "Invalid quantity: Please enter a number between 1 and " + numberOfCopies[0] + ".";
+        //     } catch (NumberFormatException e) {
+        //         return null;
+        //     }
+        // };
+        // StringInputValidator bookOrderQuantityValidator = new StringInputValidator("Please enter the quantity of the order: ");
+        // return Integer.parseInt(bookOrderQuantityValidator.getValidInput(scanner,
+        //         bookOrderQuantityValidation));
     }
 
 
     // Customer
     public static String getValidBookTitle(Scanner scanner) {
-        InputValidator validator = new InputValidator("Please enter the Book Title: ");
+        StringInputValidator validator = new StringInputValidator("Please enter the Book Title: ");
         return validator.getValidInput(scanner, (String input) -> input.length() > 0 && input.length() <= 100);
     }
 
     // Customer
     public static String getValidAuthorName(Scanner scanner) {
-        InputValidator validator = new InputValidator("Please enter the Author Name: ");
+        StringInputValidator validator = new StringInputValidator("Please enter the Author Name: ");
         return validator.getValidInput(scanner, (String input) -> input.length() > 0 && input.length() <= 50);
     }
 
     // Customer
     public static String getValidCustomerID(Scanner scanner, String prompt) {
-        InputValidator customerIDValidator = new InputValidator(prompt);
-        InputValidator.StringValidation customerIDValidation = (String input) -> {
+        StringInputValidator customerIDValidator = new StringInputValidator(prompt);
+        StringInputValidator.StringValidation customerIDValidation = (String input) -> {
             if(input.length() == 0 || input.length() > 10) {
                 return "Customer ID must be between 1 and 10 characters long.";
             }
@@ -122,13 +141,13 @@ public class InputHandler {
 
     // Bookstore
     public static String getValidYear(Scanner scanner) {
-        InputValidator validator = new InputValidator("Please enter the target year (YYYY): ");
+        StringInputValidator validator = new StringInputValidator("Please enter the target year (YYYY): ");
         return validator.getValidInput(scanner, (String input) -> input.length() == 4);
     }
 
     // Bookstore
     public static String getValidYearMonth(Scanner scanner) {
-        InputValidator validator = new InputValidator("Please input the Month for Order Query (e.g., 2005-09): ");
+        StringInputValidator validator = new StringInputValidator("Please input the Month for Order Query (e.g., 2005-09): ");
         return validator.getValidInput(scanner, (String input) -> input.matches("\\d{4}-\\d{2}"));
     }
 
@@ -150,118 +169,46 @@ public class InputHandler {
         return quantity;
     }
 
-    public static int getValidQuantity(Scanner scanner) {
-        int quantity = 0;
-        while (true) {
-            System.out.print("Please enter the Quantity you want: ");
-            quantity = scanner.nextInt();
+    public static String getValidOrderID(Scanner scanner, String prompt) {
+        StringInputValidator validator = new StringInputValidator(prompt);
+        return validator.getValidInput(scanner, (String input) -> {
             try {
-                if (quantity < 1) {
-                    System.out.println("[Error] Invalid Input: Zero Quantity is entered. Please try again.");
-                } else {
-                    break;
+                ResultSet orderResult = TableHandler.orderTableHandler.selectRecordByKey(new String[] { input });
+                if (!orderResult.next()) {
+                    return "No order found with the given ID. Please try again.";
                 }
-            } catch (NumberFormatException e) {
-                System.out.println("[Error] Invalid Input");
+            } catch (SQLException e) {
+                return "An error occurred while checking order: " + e.getMessage();
             }
-        }
-        return quantity;
+            return null;
+        });
     }
 
-    // Customer
-    public static int getValidAddQuantity(Scanner scanner) {
-        int input = 0;
-        while (true) {
-            System.out.print("How many numbers do you want to add? : ");
-            input = scanner.nextInt();
-            try {
-                if (input < 1) {
-                    System.out.println("[Error] Invalid Input: Zero Quantity is entered. Please try again.");
-                } else {
-                    break;
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("[Error] Invalid Input");
-            }
-        }
-        return input;
+    public static String getValidOrderID(Scanner scanner) {
+        return getValidOrderID(scanner, "Please enter the Order ID: ");
     }
 
-    // Customer
-    public static int getValidDeleteQuantity(Scanner scanner) {
-        int input = 0;
-        while (true) {
-            System.out.print("How many numbers do you want to delete? : ");
-            input = scanner.nextInt();
-            try {
-                if (input < 1) {
-                    System.out.println("[Error] Invalid Input: Zero Quantity is entered. Please try again.");
-                } else {
-                    break;
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("[Error] Invalid Input");
-            }
-        }
-        return input;
+    public static int getValidOrderAlteringBookNumber(Scanner scanner, int max_number){
+        return getValidIntegerInRange("Which book you want to alter (input book no.):", scanner, 1, max_number);
+        // IntegerInputValidator validator = new IntegerInputValidator("Which book you want to alter (input book no.):");
+        // return validator.getValidInput(scanner, (Integer input) -> {
+        //     if(input >= 1 && input <= max_number){
+        //         return null;
+        //     }
+        //     return "Invalid input: Please enter a number between 1 and " + max_number + ".";
+        // });
     }
 
-    // Customer
-    public static String getValidExit(Scanner scanner) {
-        String input = "";
-        System.out.print("Please press (L/F): ");
-        while (true) {
-            input = scanner.nextLine().replace("\n", "");
-            try {
-                if (input.equals("L") || input.equals("F")) {
-                    return input;
-                } else {
-                    System.out.println(
-                            "[Error] You should only enter 'L' for Looking the ordered list / 'F' for Finishing ordering. Please try again.");
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("[Error] Invalid Input");
+    public final static String ADD_CHOICE = "add";
+    public final static String REMOVE_CHOICE = "remove";
+    public static String getValidOrderAlteringChoice(Scanner scanner){
+        StringInputValidator validator = new StringInputValidator("input add or remove\n");
+        return validator.getValidInput(scanner, (String input) -> {
+            if(input.equals(ADD_CHOICE) || input.equals(REMOVE_CHOICE)){
+                return null;
             }
-        }
-    }
-
-    // BookStore
-    public static int getValidOrderID(Scanner scanner) {
-        int oid;
-        while (true) {
-            System.out.print("Please input the order ID: ");
-            try {
-                if (scanner.hasNext()) {
-                    oid = scanner.nextInt();
-                    if (oid <= 0)
-                        System.out.println("[Error] Invalid Order ID. Please try again.");
-                    else
-                        break;
-                }
-            } catch (InputMismatchException e) {
-                System.out.println("[Error] Invalid Input");
-            }
-        }
-        return oid;
-    }
-
-    // Customer
-    public static String getValidAction(Scanner scanner) {
-        String input = "";
-        while (true) {
-            System.out.print("What kind of action do you want to make? (A/D): ");
-            input = scanner.nextLine().replace("\n", "");
-            try {
-                if (!input.equals("A") & !input.equals("D")) {
-                    System.out.println("[Error] Only A or D can be entered (A = Add / D = Delete)");
-                } else {
-                    break;
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("[Error] Invalid Input");
-            }
-        }
-        return input;
+            return "Invalid input: Please enter either " + ADD_CHOICE + "/" + REMOVE_CHOICE + ".";
+        });
     }
 
     // BookStore
@@ -282,24 +229,5 @@ public class InputHandler {
             }
         }
         return r;
-    }
-
-    // Part of Customer Interface
-    public static int getValidChoice(Scanner scanner, int number) {
-        int input = -1;
-        while (true) {
-            System.out.print("Which book do you want to alter (input book no.): ");
-            input = scanner.nextInt();
-            try {
-                if (input < 1 || input > number) {
-                    System.out.println("[Error] Out of Range. Please select a number range from 1 to " + number);
-                } else {
-                    break;
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("[Error] Invalid Input");
-            }
-        }
-        return input;
     }
 }

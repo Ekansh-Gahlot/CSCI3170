@@ -33,7 +33,7 @@ public class BookstoreInterface {
 
     private static void updateOrderStatus() {
         try {
-            int orderId;
+            String orderId;
             int numberOfBooks;
             String shippingStatus;
             String orderIdentifier;

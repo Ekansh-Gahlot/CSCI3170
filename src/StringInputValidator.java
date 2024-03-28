@@ -1,9 +1,9 @@
 import java.util.Scanner;
 
-public class InputValidator{
+public class StringInputValidator{
     private String promptString;
 
-    public InputValidator(String promptString_) {
+    public StringInputValidator(String promptString_) {
         promptString = promptString_;
     }
 
