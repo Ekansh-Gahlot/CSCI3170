@@ -5,7 +5,6 @@ import java.util.*;
 import static java.lang.System.err;
 import static java.lang.System.out;
 
-
 public class BookstoreInterface {
     private static Scanner scanner;
     private static final int EXIT_CHOICE = 4;
@@ -20,7 +19,8 @@ public class BookstoreInterface {
                 .addAction(1, "Order Update", BookstoreInterface::updateOrderStatus)
                 .addAction(2, "Order Query", BookstoreInterface::orderQuery)
                 .addAction(3, "N most popular book query", BookstoreInterface::nMostPopularBookQuery)
-                .addAction(EXIT_CHOICE, "Back to main menu", () -> {});
+                .addAction(EXIT_CHOICE, "Back to main menu", () -> {
+                });
 
         try {
             while (selector.run(scanner) != EXIT_CHOICE) {
@@ -63,9 +63,7 @@ public class BookstoreInterface {
 
                 out.println("The shipping status of Order " + orderIdentifier + " is " + shippingStatus
                         + " and " + numberOfBooks + " books have been ordered.");
-
-                out.println("Would you like to update the shipping status? (Y/N)");
-                String userResponse = scanner.nextLine().trim();
+                String userResponse = InputHandler.getValidUpdateConfirmation(scanner);
 
                 if (userResponse.equalsIgnoreCase("Y")) {
                     sql = "UPDATE orders SET shipping_status = 'Y' WHERE order_id = ?";
@@ -79,26 +77,33 @@ public class BookstoreInterface {
     }
 
     private static final SimpleDateFormat DF = new SimpleDateFormat("yyyy-MM-dd");
+
     private static void orderQuery() {
         String[] yearMonth = InputHandler.getValidYearMonth(scanner).split("-");
         String year = yearMonth[0], month = yearMonth[1];
 
         String sql = "SELECT * FROM orders\n" +
-                     "WHERE shipping_status = 'Y' \n" +
-                     "AND extract (YEAR from o_date)  = ? \n" + // thank you Oracle
-                     "AND extract (MONTH from o_date)  = ?\n" +
-                     "ORDER BY order_id ASC";
+                "WHERE shipping_status = 'Y' \n" +
+                "AND extract (YEAR from o_date)  = ? \n" + // thank you Oracle
+                "AND extract (MONTH from o_date)  = ?\n" +
+                "ORDER BY order_id ASC";
 
         try (ResultSet r = DatabaseManager.executeStatement(sql, year, month)) {
             int record = 1;
+            int totalCharge = 0;
             while (r.next()) {
+                out.println();
                 out.println();
                 out.println("Record: " + (record++));
                 out.println("OrderID: " + r.getString("order_id"));
                 out.println("CustomerID: " + r.getString("customer_id"));
                 out.println("OrderDate: " + DF.format(r.getDate("o_date")));
                 out.println("charge: " + r.getInt("charge"));
+                totalCharge += r.getInt("charge");
             }
+            out.println();
+            out.println();
+            out.println("Total charges for the month is " + totalCharge);
         } catch (SQLException e) {
             err.println("[Error]: " + e);
         }
@@ -108,9 +113,9 @@ public class BookstoreInterface {
         int n = InputHandler.getValidNBookNum(scanner);
 
         String sql = "SELECT o.ISBN as \"ISBN\", b.title as \"title\", SUM(o.quantity) as \"copies\" \n" +
-                     "FROM ordering o INNER JOIN book b ON o.isbn = b.isbn\n" +
-                     "GROUP BY o.isbn, b.title\n" +
-                     "ORDER BY SUM(o.quantity) DESC";
+                "FROM ordering o INNER JOIN book b ON o.isbn = b.isbn\n" +
+                "GROUP BY o.isbn, b.title\n" +
+                "ORDER BY SUM(o.quantity) DESC";
 
         try (ResultSet r = DatabaseManager.executeStatement(sql)) {
             out.println("ISBN            Title                Copies");
