@@ -46,23 +46,6 @@ public class DatabaseManager {
         return connection;
     }
 
-    // Why MYSQL???
-    // static public Connection connectToSQL() {
-    //     try {
-    //         Class.forName("com.mysql.jdbc.Driver");
-    //         Connection con = DriverManager.getConnection(dbAddress, USER, PASSWORD);
-    //         System.out.println("Connection Success\n\n");
-    //         return con;
-    //     } catch (ClassNotFoundException e) {
-    //         System.out.println("[ERROR] Java MySQL DB Driver not found.");
-    //         System.exit(0);
-    //     } catch (SQLException e) {
-    //         System.out.println(e);
-    //         System.exit(0);
-    //     }
-    //     return null;
-    // }
-
     public static ResultSet executeStatement(String statement, List<String> parameters){
         PreparedStatement preStatement;
         try{
@@ -76,8 +59,8 @@ public class DatabaseManager {
             return preStatement.executeQuery();
         }
         catch (SQLException e) {
-            System.out.println("An error occurred: " + e.getMessage());
-            System.out.println("Statement was: " + statement);
+            // System.out.println("An error occurred: " + e.getMessage());
+            // System.out.println("Statement was: " + statement);
             return null;
         }
     }
