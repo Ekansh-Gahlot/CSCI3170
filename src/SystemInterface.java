@@ -151,6 +151,7 @@ public class SystemInterface {
             // System.err.println("An unexpected error occurred: " + e.getMessage());
             System.err.println("An unexpected error occurred while loading data: " + e.getMessage());
             System.out.println("Please make sure the file path is correct and the required files are present!");
+            System.err.println("Please also make sure the tables are already created!");
             return;
         }
 
@@ -164,7 +165,7 @@ public class SystemInterface {
                     MainApplication.setSystemDate(latestOrderDate);
                 }
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             System.err.println("An error occurred while setting new system date: " + e.getMessage());
             return;
