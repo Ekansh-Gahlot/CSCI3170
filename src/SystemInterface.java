@@ -147,8 +147,27 @@ public class SystemInterface {
 
             System.out.println("Data loaded successfully.");
         } catch (Exception e) {
+            // e.printStackTrace();
+            // System.err.println("An unexpected error occurred: " + e.getMessage());
+            System.err.println("An unexpected error occurred while loading data: " + e.getMessage());
+            System.out.println("Please make sure the file path is correct and the required files are present!");
+            return;
+        }
+
+        // update system date to the latest order date
+        LocalDate latestOrderDate = null;
+        try {
+            ResultSet dateResult = DatabaseManager.executeStatement("SELECT MAX(o_date) AS order_date FROM orders");
+            if (dateResult.next()) {
+                latestOrderDate = dateResult.getDate("order_date").toLocalDate();
+                if (latestOrderDate.isAfter(MainApplication.getSystemDate())){
+                    MainApplication.setSystemDate(latestOrderDate);
+                }
+            }
+        } catch (SQLException e) {
             e.printStackTrace();
-            System.err.println("An unexpected error occurred: " + e.getMessage());
+            System.err.println("An error occurred while setting new system date: " + e.getMessage());
+            return;
         }
     }
 
@@ -169,26 +188,8 @@ public class SystemInterface {
     }
 
     private static void systemDateSetting() {
-        Connection dbConnection = DatabaseManager.getConnection();
-
-        LocalDate orderDate = null;
         String pattern = "yyyyMMdd";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
-        try {
-            Statement stmt = dbConnection.createStatement();
-
-            String query = "SELECT MAX(o_date) AS order_date FROM orders";
-            ResultSet rs = stmt.executeQuery(query);
-            if (rs.next()) {
-                orderDate = rs.getDate("order_date").toLocalDate();
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("Database error: " + e.getMessage());
-            return;
-        }
-
         while (true) {
             LocalDate inputDate;
 
@@ -202,11 +203,19 @@ public class SystemInterface {
 
             if (inputDate.isBefore(MainApplication.getSystemDate())) {
                 System.out.println("Invalid input: Input Date earlier than the Original Date");
-            } else if (inputDate.isBefore(orderDate)) {
-                System.out.println("Invalid input: Input Date earlier than the Latest Order Date");
             } else {
+                LocalDate latestOrderDate = null;
+                try {
+                    ResultSet dateResult = DatabaseManager.executeStatement("SELECT MAX(o_date) AS order_date FROM orders");
+                    if (dateResult.next()) {
+                        latestOrderDate = dateResult.getDate("order_date").toLocalDate();
+                        System.out.println("Latest date in orders: " + latestOrderDate);
+                    }
+                } catch (Exception e) {
+                    System.err.println("An error occurred while getting the latest order date: " + e.getMessage());
+                }
                 MainApplication.setSystemDate(inputDate);
-                System.out.println("System date set to: " + formatter.format(inputDate));
+                System.out.println("Today is " + formatter.format(inputDate));
                 break;
             }
         }
