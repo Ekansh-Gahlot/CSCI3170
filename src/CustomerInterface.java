@@ -215,17 +215,13 @@ public class CustomerInterface {
                     String ISBN = bookOrderInput;
                     int quantity = InputHandler.getValidOrderBookQuantity(scanner, ISBN);
                     if (quantity == -1) { // error occurred, skip this order
-                        return;
+                        System.out.println("An error occurred while ordering the book. Did you enter a valid ISBN? Please try again.");
+                        continue;
                     }
-                    Boolean insertResult = false;
-                    try {
-                        insertResult = TableHandler.orderingTableHandler.insertRecord(
-                                String.format("%08d", thisOrderID[0]),
-                                ISBN,
-                                String.valueOf(quantity));
-                    } catch (Exception e) {
-                        System.out.println("An error occurred creating order: " + e.getMessage());
-                    }
+                    Boolean insertResult = TableHandler.orderingTableHandler.insertRecord(
+                            String.format("%08d", thisOrderID[0]),
+                            ISBN,
+                            String.valueOf(quantity));
 
                     if (insertResult) {
                         ResultSet selectedBook = TableHandler.bookTableHandler.selectRecordByKey(new String[] { ISBN });
@@ -236,6 +232,8 @@ public class CustomerInterface {
                         } catch (SQLException e) {
                             System.out.println("An error occurred while getting book info: " + e.getMessage());
                         }
+                    }else{
+                        System.out.println("An error occurred while ordering the book. Did you enter the same ISBN again? Please try again.");
                     }
                     break;
             }
@@ -317,6 +315,11 @@ public class CustomerInterface {
         }
         printOrder(order);
         printOrdering(orderings);
+
+        if(orderings.size() == 0){
+            System.out.println("There is no book in the order to alter");
+            return;
+        }
 
         int bookNumber = InputHandler.getValidOrderAlteringBookNumber(scanner, orderings.size());
         Ordering orderingToAlter = orderings.get(bookNumber - 1);
