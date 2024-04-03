@@ -14,7 +14,8 @@ Run the following:
 
 ```
 cd src
-sh simple-run.sh
+make
+make run
 ```
 
 ### With Docker
