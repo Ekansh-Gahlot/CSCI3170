@@ -45,7 +45,7 @@ public class MainApplication {
                     .addAction(4, "Show System Date", MainApplication::showSystemDate)
                     .addAction(5, "Quit the Application......", () -> {});
 
-            systemDate = LocalDate.EPOCH;
+            systemDate = LocalDate.of(1970, 1, 1);
             while (true) {
                 // showSystemDate(); // Not sure here whether necessary or not
                 try {
