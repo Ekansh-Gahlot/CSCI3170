@@ -1,9 +1,13 @@
 # CSCI3170
 
 CSCI 3170 Project Group 13
+
 Group Members:
+
 Cheung Shing Kit 1155158559
+
 Leung Yuk Hei 1155158560
+
 Ekansh Gahlot 1155139809
 
 ## Quick Start
