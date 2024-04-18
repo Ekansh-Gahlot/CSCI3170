@@ -115,7 +115,7 @@ public class BookstoreInterface {
         String sql = "SELECT o.ISBN as \"ISBN\", b.title as \"title\", SUM(o.quantity) as \"copies\" \n" +
                 "FROM ordering o INNER JOIN book b ON o.isbn = b.isbn\n" +
                 "GROUP BY o.isbn, b.title\n" +
-                "ORDER BY SUM(o.quantity) DESC";
+                "ORDER BY SUM(o.quantity) DESC, b.title ASC, o.isbn ASC";
 
         try (ResultSet r = DatabaseManager.executeStatement(sql)) {
             out.println("ISBN            Title                Copies");
