@@ -15,7 +15,7 @@ public class InputHandler {
      * @return a valid partial string or a string containing an empty string
      */
     public static String getValidPartialString(String input) {
-        if (input.matches(".+%.+")) {
+        if (input.matches(".+[%_].+")) {
             return "''"; // invalidate strings that has % in the middle
         }
         return input;
